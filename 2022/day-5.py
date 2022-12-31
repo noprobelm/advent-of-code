@@ -50,6 +50,7 @@ class Crates:
         self.procedure = self.format_procedure(self.procedure)
 
     @property
+
     def message(self):
         """Returns a string of the top crate on all stacks in ascending order."""
         message = "".join([self.layout[stack][-1] for stack in range(1, 10)])
@@ -135,6 +136,5 @@ if __name__ == '__main__':
     print(f"The hidden message with CrateMover 9000 is {crates.message}")
     crates.reset()
 
-    crates = Crates()
     crates.move(model="9001")
     print(f"The hidden message with CrateMover 9001 is {crates.message}")
