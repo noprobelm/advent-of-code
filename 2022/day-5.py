@@ -51,10 +51,11 @@ class Crates:
 
     @property
     def message(self):
+        """Returns a string of the top crate on all stacks in ascending order."""
         message = "".join([self.layout[stack][-1] for stack in range(1, 10)])
         return message
 
-    def move(self, model):
+    def move(self, model: str) -> None:
         """Executes each instruction in the procedure. Updates instance attribute 'layout' as the iterations progress.
 
         Parameters
@@ -73,7 +74,7 @@ class Crates:
                     self.layout[instruction["from"]].pop()
 
     @staticmethod
-    def format_procedure(procedure):
+    def format_procedure(procedure: list[str]) -> list[dict[str, int]]:
         """Used to translate the list of str instructions into a list of dicts structure
 
         Parameters
@@ -94,7 +95,7 @@ class Crates:
         return procedure_formatted
 
     @staticmethod
-    def format_layout(layout):
+    def format_layout(layout: list[str]) -> dict[int, list[str]]:
         """Used to translate the unformatted layout of the crates into a dict structure
 
         Parameters
