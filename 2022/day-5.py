@@ -29,12 +29,12 @@ class Crates:
     move(model: str)
         Executes the procedure. 'Model' is the crane model to use for the method's logic (i.e. '9000' or '9001')
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.layout = None
         self.procedure = None
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the crates to their original positions"""
         with open("day-5-input.txt", "r") as f:
             self.layout = []
@@ -55,6 +55,13 @@ class Crates:
         return message
 
     def move(self, model):
+        """Executes each instruction in the procedure. Updates instance attribute 'layout' as the iterations progress.
+
+        Parameters
+        -------
+        model : str
+            Dictates the crane model to use. Must be '9000' or '9001'
+        """
         for instruction in self.procedure:
             if model == "9000":
                 for i in range(instruction["qty"]):
