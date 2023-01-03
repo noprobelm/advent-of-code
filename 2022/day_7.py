@@ -69,12 +69,21 @@ class System:
         self._stdin_buffer = []
         self.stdout_buffer = []
 
-    def du(self):
-        tree = {}
-        bfs_tree = {}
-        for successor in nx.bfs_tree(self._tree, self.root):
+    @property
+    def tree(self):
+        successor_nodes = []
+        successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
+        for successor in successors:
             if isinstance(successor, Path):
-                for path, obj in self._tree.edges(successor):
+                for u, v in self._tree.out_edges(successor):
+                    successor_nodes.append([self._tree.nodes[v]['size'], f"{str(u)}{v.name}"])
+        return [successor_nodes]
+
+    def du(self, max_size=100000):
+        successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
+        for successor in successors:
+            if isinstance(successor, Path):
+                for path, obj in self._tree.out_edges(successor):
                     if isinstance(obj, Path):
                         self._tree.nodes[path]['cumulative_size'] += self._tree.nodes[obj]['cumulative_size']
                     elif isinstance(obj, File):
@@ -84,9 +93,9 @@ class System:
         path_sizes = []
         for node in self._tree:
             if isinstance(node, Path):
-                path_sizes.append([self._tree.nodes[node]['cumulative_size'], str(node)])
+                path_sizes.append([self._tree.nodes[node]['cumulative_size'], self._tree.nodes[node]['size'], str(node)])
         path_sizes = list(sorted(path_sizes, key=lambda x: x[0], reverse=True))
-        return path_sizes
+        return list(filter(lambda p: p[0] < 100000, path_sizes))
 
     @property
     def stdin_buffer(self):
@@ -177,4 +186,7 @@ if __name__ == "__main__":
     stdin_buffer = stdin_from_file()
     for stdin in stdin_buffer:
         sys.eval(stdin['command'], tuple(stdin['args'].values()))
-    print(sys.du())
+    paths = sys.du()
+    answer = sum([path[0] for path in paths])
+    pprint(answer)
+#    print(sys.du())
