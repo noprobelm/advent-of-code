@@ -67,8 +67,8 @@ class System:
         self.disk_used = 0
         self.root = Path(fullpath="")
         self.cwd = self.root
-        self._tree = nx.DiGraph()
-        self._tree.add_node(self.root, objtype=type(Path), size=0, cumulative_size=0)
+        self.graph = nx.DiGraph()
+        self.graph.add_node(self.root, objtype=type(Path), size=0, cumulative_size=0)
         self._stdin_buffer = []
         self.stdout_buffer = []
 
@@ -76,32 +76,32 @@ class System:
         return f"{self.cwd}"
 
     def du(self):
-        successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
+        successors = [successor for successor in nx.bfs_tree(self.graph, self.root)][::-1]
 
         for successor in successors:
             if isinstance(successor, Path):
-                for path, obj in self._tree.out_edges(successor):
+                for path, obj in self.graph.out_edges(successor):
                     if isinstance(obj, Path):
-                        self._tree.nodes[path]["cumulative_size"] += self._tree.nodes[obj]["cumulative_size"]
+                        self.graph.nodes[path]["cumulative_size"] += self.graph.nodes[obj]["cumulative_size"]
                     elif isinstance(obj, File):
-                        self._tree.nodes[path]["size"] += self._tree.nodes[obj]["size"]
-                        self._tree.nodes[path]["cumulative_size"] += self._tree.nodes[obj]["size"]
+                        self.graph.nodes[path]["size"] += self.graph.nodes[obj]["size"]
+                        self.graph.nodes[path]["cumulative_size"] += self.graph.nodes[obj]["size"]
 
-        successors = [successor for successor in nx.bfs_successors(self._tree, self.root)]
+        successors = [successor for successor in nx.bfs_successors(self.graph, self.root)]
         trees = {
             self.root: Tree(
-                f"{self._tree.nodes[self.root]['cumulative_size']}\t[blue]{self.root.name}", guide_style="blue"
+                f"{self.graph.nodes[self.root]['cumulative_size']}\t[blue]{self.root.name}", guide_style="blue"
             )
         }
         for node, edges in successors:
             for edge_node in edges:
                 if isinstance(edge_node, Path):
                     trees[edge_node] = Tree(
-                        f"{self._tree.nodes[edge_node]['cumulative_size']}\t[blue]{edge_node.name}", guide_style="blue"
+                        f"{self.graph.nodes[edge_node]['cumulative_size']}\t[blue]{edge_node.name}", guide_style="blue"
                     )
                     trees[node].add(trees[edge_node])
                 elif isinstance(edge_node, File):
-                    trees[node].add(Tree(f"{self._tree.nodes[edge_node]['size']}\t[red]{edge_node.name}"))
+                    trees[node].add(Tree(f"{self.graph.nodes[edge_node]['size']}\t[red]{edge_node.name}"))
         return trees[self.root]
 
     @property
@@ -122,21 +122,21 @@ class System:
 
     def mkdir(self, path: str):
         path = self.__get_path(path)
-        if path in self._tree:
+        if path in self.graph:
             pprint(f"Path {path} already exists.")
             return
 
-        self._tree.add_node(path, objtype=type(Path), name=path.name, size=0, cumulative_size=0)
-        self._tree.add_edge(self.cwd, path)
+        self.graph.add_node(path, objtype=type(Path), name=path.name, size=0, cumulative_size=0)
+        self.graph.add_edge(self.cwd, path)
 
     def fallocate(self, fullpath: str, size: int):
         fullpath = self.__get_path(fullpath)
         file = File(str(fullpath)[:-1])
-        if file in self._tree:
+        if file in self.graph:
             pprint(f"File {file} already exists")
             return
-        self._tree.add_node(file, objtype=type(File), size=size)
-        self._tree.add_edge(self.cwd, file)
+        self.graph.add_node(file, objtype=type(File), size=size)
+        self.graph.add_edge(self.cwd, file)
 
     def cd(self, path: str):
         path = self.__get_path(path)
@@ -144,24 +144,24 @@ class System:
 
     def ls(self):
         contents = {self.cwd: []}
-        for path, child in self._tree.edges(self.cwd):
+        for path, child in self.graph.edges(self.cwd):
             if isinstance(child, Path):
                 contents[self.cwd].append(
-                    f"{self._tree[child]['size']}\t{self._tree[child]['cumulative_size']}\t{self._tree[child]['name']}"
+                    f"{self.graph[child]['size']}\t{self.graph[child]['cumulative_size']}\t{self.graph[child]['name']}"
                 )
             elif isinstance(child, File):
-                contents[self.cwd].append(f"{self._tree[child]['size']}\t{self._tree[child]['name']}")
+                contents[self.cwd].append(f"{self.graph[child]['size']}\t{self.graph[child]['name']}")
         return "\n".join(contents[self.cwd])
 
     def rm(self, obj):
-        if Path(obj) in self._tree:
+        if Path(obj) in self.graph:
             obj = Path(obj)
-        elif File(obj) in self._tree:
+        elif File(obj) in self.graph:
             obj = File(obj)
-        pprint([successor for successor in nx.bfs_tree(self._tree, obj)])
-        successors = [successor for successor in nx.bfs_tree(self._tree, obj)]
+        pprint([successor for successor in nx.bfs_tree(self.graph, obj)])
+        successors = [successor for successor in nx.bfs_tree(self.graph, obj)]
         for successor in successors:
-            self._tree.remove_node(successor)
+            self.graph.remove_node(successor)
 
     def eval(self, command, args):
         command = getattr(self, command)
