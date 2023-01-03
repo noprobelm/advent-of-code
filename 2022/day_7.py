@@ -4,140 +4,177 @@ import networkx as nx
 from typing import Union, Optional, Tuple, List
 from rich.pretty import pprint
 from rich.console import Console
+from rich import print
+
 console = Console()
+
 
 @dataclass
 class Path:
-    path: Union["Path", None]
-    name: str
-    size: int = 0
-    cumulative_size: int = 0
+    fullpath: str
 
     def __post_init__(self):
-        if self.path is None:
-            self.abspath = ''
+        try:
+            if self.fullpath[-1] != '/':
+                self.fullpath = f"{self.fullpath}/"
+        except IndexError:
+            self.fullpath = '/'
+        self.parts = re.findall(r"\w+", self.fullpath)
+        if len(self.parts) > 0:
+            self.parts.insert(0, "")
         else:
-            self.abspath = f"{self.path.abspath}/{self.name}"
+            self.parts = [""]
+        self.name = self.parts[-1]
+        self.path = f"{'/'.join(self.parts[:-1])}/"
 
-        self.children = []
+    def __str__(self):
+        return f"{self.fullpath}"
 
     def __hash__(self):
-        return hash((self.abspath, type(self)))
+        return hash((self.fullpath, type(self)))
 
     def __eq__(self, other):
-        if self.abspath == other:
+        if hash(other) == hash(self):
             return True
-        else:
-            return False
-
-    # def __repr__(self):
-    #     return self.abspath
+        return False
 
 
 @dataclass
 class File:
-    path: Path
-    name: str
-    size: int
+    fullpath: str
 
     def __post_init__(self):
-        self.size = int(self.size)
-        self.abspath = f"{self.path}/{self.name}"
+        parts = re.findall(r"[\.\w]+", self.fullpath)
+        self.path = f"{'/'.join(parts[:-1])}/"
+        self.name = parts[-1]
+
+    def __str__(self):
+        return f"{self.fullpath}{self.name}"
 
     def __hash__(self):
-        return hash((self.abspath, type(self)))
+        return hash((self.fullpath, self.name, type(self)))
 
     def __eq__(self, other):
-        if isinstance(other, File) and self.abspath == other:
+        if hash(other) == hash(self):
             return True
-        else:
-            return False
-
-    def __repr__(self):
-        return self.abspath
+        return False
 
 
 class System:
     def __init__(self):
-        self.root = Path(path=None, name='/')
-        self.objects = [self.root]
+        self.root = Path(fullpath="")
         self.cwd = self.root
         self._tree = nx.DiGraph()
-        self._tree.add_node(self.root, objtype='Path', size=0, cumulative_size=0)
+        self._tree.add_node(self.root, objtype="Path", size=0, cumulative_size=0)
+        self._stdin_buffer = []
         self.stdout_buffer = []
+
+    def du(self):
+        tree = {}
+        bfs_tree = {}
+        for successor in nx.bfs_tree(self._tree, self.root):
+            if isinstance(successor, Path):
+                for path, obj in self._tree.edges(successor):
+                    if isinstance(obj, Path):
+                        self._tree.nodes[path]['cumulative_size'] += self._tree.nodes[obj]['cumulative_size']
+                    elif isinstance(obj, File):
+                        self._tree.nodes[path]['size'] += self._tree.nodes[obj]['size']
+                        self._tree.nodes[path]['cumulative_size'] += self._tree.nodes[obj]['size']
+
+        path_sizes = []
+        for node in self._tree:
+            if isinstance(node, Path):
+                path_sizes.append([self._tree.nodes[node]['cumulative_size'], str(node)])
+        path_sizes = list(sorted(path_sizes, key=lambda x: x[0], reverse=True))
+        return path_sizes
 
     @property
-    def tree(self):
-        successors = [successor for successor in nx.bfs_successors(self._tree, self.root)]
-        tree = successors
-        return tree
+    def stdin_buffer(self):
+        return self._stdin_buffer
 
-    def cd(self, target):
-        pprint(target)
-        if target == '/':
-            self.cwd = Path(path=None, name='/')
-        elif target.startswith('/'):
-            target.rstrip('/')
-            self.cwd = self.objects[self.objects.index(target[:-1])]
-            pprint(self.cwd)
-        elif target[0].isalpha():
-            self.cwd = Path(path=self.cwd, name=target)
-        elif target == '..':
-            if self.cwd is not self.root:
-                self.cwd = Path(path=self.cwd.path.path, name=self.cwd.path.name)
+    @stdin_buffer.setter
+    def stdin_buffer(self, buffer: str):
+        self._stdin_buffer = buffer.split(" ")
 
-    def ls(self, squelch: Optional[bool] = True) -> None:
-        for obj in self.stdout_buffer:
-            if obj[0].isdigit():
-                obj = File(path=self.cwd, name=obj[1], size=int(obj[0]))
-            else:
-                obj = Path(path=self.cwd, name=obj[1])
+    def __get_path(self, path):
+        if path.startswith("/"):
+            return Path(path)
+        if path[0].isalpha():
+            return Path(f"{self.cwd}{path}/")
+        if path == "..":
+            return Path(self.cwd.path)
 
-            if isinstance(obj, Path):
-                self.objects.append(obj)
-                self._tree.add_edge(obj.path, obj, objtype='Path', size=obj.size, cumulative_size=0)
-            elif isinstance(obj, File):
-                self.objects.append(obj)
-                self._tree.add_edge(obj.path, obj, objtype='File', size=obj.size)
+    def mkdir(self, path: str):
+        path = self.__get_path(path)
+        if path in self._tree:
+            pprint(f"Path {path} already exists.")
+            return
 
-            if squelch is False:
-                print(obj)
+        self._tree.add_node(path, name=path.name, size=0, cumulative_size=0)
+        self._tree.add_edge(self.cwd, path)
 
-        self.stdout_buffer = []
+    def fallocate(self, fullpath: str, size: int):
+        fullpath = self.__get_path(fullpath)
+        file = File(str(fullpath)[:-1])
+        if file in self._tree:
+            pprint(f"File {file} already exists")
+            return
+        self._tree.add_node(file, size=size)
+        self._tree.add_edge(self.cwd, file)
+
+    def cd(self, path: str):
+        path = self.__get_path(path)
+        self.cwd = path
+
+    def ls(self):
+        contents = {self.cwd: []}
+        for path, child in self._tree.edges(self.cwd):
+            if isinstance(child, Path):
+                contents[self.cwd].append(
+                    f"{self._tree[child]['size']}\t{self._tree[child]['cumulative_size']}\t{self._tree[child]['name']}"
+                )
+            elif isinstance(child, File):
+                contents[self.cwd].append(
+                    f"{self._tree[child]['size']}\t{self._tree[child]['name']}"
+                )
+        return "\n".join(contents[self.cwd])
+
+    def eval(self, command, args):
+        command = getattr(self, command)
+        command(*args)
 
 
-if __name__ == '__main__':
-    sys = System()
 
-    with open('day-7-input.txt', 'r') as f:
+def stdin_from_file():
+    with open("day-7-input.txt", "r") as f:
         data = [line for line in f.readlines()]
 
-    stdout_buffer = []
-    for line in data:
-        if line[0] == '$':
-            sys.ls()
-            kind = 'stdin'
-        else:
-            kind = 'stdout'
-
-        if kind == 'stdin':
-            line = line[1:].strip().split(' ')
-            command = line[0]
-            if len(line) > 1:
-                arg = line[1]
+    stdin_buffer = []
+    for num, line in enumerate(data):
+        if line.startswith("$"):
+            line = line.strip("$")
+            line = line.strip()
+            stdin = line.split(" ")
+            command = stdin[0]
             if command == 'cd':
-                sys.cd(arg)
+                stdin_buffer.append({'command': command, 'args': {'path': stdin[1]}})
+            elif command == 'ls':
+                continue
 
-        elif kind == 'stdout':
-            line = line.split(' ')
-            sys.stdout_buffer.append([line[0], line[1].strip()])
-#    sys.build_tree()
-    # for node in sys.tree:
-    #     pprint(node)
-    pprint(sys.tree)
-    sys.cd('/gwlwp/fwdwq/qbnfrhdn/fwdwq/qzgsswr/vhstcbnf/qzgsswr/vqtnpbn/')
-    cwd = sys.cwd
-    pprint(sys._tree[cwd])
-    pprint(sys.tree)
+        elif re.match(r"\w", line[0]):
+            line = line.strip()
+            args = line.split(" ")
+            if args[0].isdigit():
+                stdin_buffer.append({'command': 'fallocate', 'args': {'fullpath': args[1], 'size': int(args[0])}})
+            elif args[0].startswith('dir'):
+                stdin_buffer.append({'command': 'mkdir', 'args': {'fullpath': args[1]}})
+
+    return stdin_buffer
 
 
+if __name__ == "__main__":
+    sys = System()
+    stdin_buffer = stdin_from_file()
+    for stdin in stdin_buffer:
+        sys.eval(stdin['command'], tuple(stdin['args'].values()))
+    print(sys.du())
