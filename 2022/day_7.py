@@ -5,6 +5,7 @@ from typing import Union, Optional, Tuple, List
 from rich.pretty import pprint
 from rich.console import Console
 from rich import print
+from rich.tree import Tree
 
 console = Console()
 
@@ -13,7 +14,7 @@ console = Console()
 class Path:
     fullpath: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         try:
             if self.fullpath[-1] != '/':
                 self.fullpath = f"{self.fullpath}/"
@@ -24,16 +25,16 @@ class Path:
             self.parts.insert(0, "")
         else:
             self.parts = [""]
-        self.name = self.parts[-1]
+        self.name = f"{self.parts[-1]}/"
         self.path = f"{'/'.join(self.parts[:-1])}/"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.fullpath}"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.fullpath, type(self)))
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Path") -> bool:
         if hash(other) == hash(self):
             return True
         return False
@@ -45,7 +46,7 @@ class File:
 
     def __post_init__(self):
         parts = re.findall(r"[\.\w]+", self.fullpath)
-        self.path = f"{'/'.join(parts[:-1])}/"
+        self.path = f"/{'/'.join(parts[:-1])}"
         self.name = parts[-1]
 
     def __str__(self):
@@ -62,22 +63,33 @@ class File:
 
 class System:
     def __init__(self):
+        self.disk_space = 70000000
+        self.disk_used = 0
         self.root = Path(fullpath="")
         self.cwd = self.root
         self._tree = nx.DiGraph()
-        self._tree.add_node(self.root, objtype="Path", size=0, cumulative_size=0)
+        self._tree.add_node(self.root, objtype=type(Path), size=0, cumulative_size=0)
         self._stdin_buffer = []
         self.stdout_buffer = []
 
     @property
     def tree(self):
-        successor_nodes = []
-        successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
-        for successor in successors:
-            if isinstance(successor, Path):
-                for u, v in self._tree.out_edges(successor):
-                    successor_nodes.append([self._tree.nodes[v]['size'], f"{str(u)}{v.name}"])
-        return [successor_nodes]
+        trees = {}
+        successors = [successor for successor in nx.bfs_successors(self._tree, self.root)]
+        for node, edges in successors:
+            if node not in trees.keys():
+                trees[node] = Tree(node.name)
+            for edge_node in edges:
+                if isinstance(edge_node, Path):
+                    if edge_node not in trees.keys():
+                        trees[edge_node] = Tree(edge_node.name)
+                        trees[node].add(trees[edge_node])
+                elif isinstance(edge_node, File):
+                    trees[node].add(edge_node.name)
+        return trees[self.root]
+
+    def pwd(self):
+        return f"{self.cwd}"
 
     def du(self, max_size=100000):
         successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
@@ -119,7 +131,7 @@ class System:
             pprint(f"Path {path} already exists.")
             return
 
-        self._tree.add_node(path, name=path.name, size=0, cumulative_size=0)
+        self._tree.add_node(path, objtype=type(Path), name=path.name, size=0, cumulative_size=0)
         self._tree.add_edge(self.cwd, path)
 
     def fallocate(self, fullpath: str, size: int):
@@ -128,7 +140,7 @@ class System:
         if file in self._tree:
             pprint(f"File {file} already exists")
             return
-        self._tree.add_node(file, size=size)
+        self._tree.add_node(file, objtype=type(File), size=size)
         self._tree.add_edge(self.cwd, file)
 
     def cd(self, path: str):
@@ -148,9 +160,20 @@ class System:
                 )
         return "\n".join(contents[self.cwd])
 
+    def rm(self, obj):
+        if Path(obj) in self._tree:
+            obj = Path(obj)
+        elif File(obj) in self._tree:
+            obj = File(obj)
+        pprint([successor for successor in nx.bfs_tree(self._tree, obj)])
+        successors = [successor for successor in nx.bfs_tree(self._tree, obj)]
+        for successor in successors:
+            self._tree.remove_node(successor)
+
     def eval(self, command, args):
         command = getattr(self, command)
         command(*args)
+
 
 
 
@@ -189,4 +212,6 @@ if __name__ == "__main__":
     paths = sys.du()
     answer = sum([path[0] for path in paths])
     pprint(answer)
+    print(sys.tree)
+#    pprint(sys.tree)
 #    print(sys.du())
