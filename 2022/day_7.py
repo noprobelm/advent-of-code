@@ -16,10 +16,10 @@ class Path:
 
     def __post_init__(self) -> None:
         try:
-            if self.fullpath[-1] != '/':
+            if self.fullpath[-1] != "/":
                 self.fullpath = f"{self.fullpath}/"
         except IndexError:
-            self.fullpath = '/'
+            self.fullpath = "/"
         self.parts = re.findall(r"\w+", self.fullpath)
         if len(self.parts) > 0:
             self.parts.insert(0, "")
@@ -72,42 +72,37 @@ class System:
         self._stdin_buffer = []
         self.stdout_buffer = []
 
-    @property
-    def tree(self):
-        trees = {}
-        successors = [successor for successor in nx.bfs_successors(self._tree, self.root)]
-        for node, edges in successors:
-            if node not in trees.keys():
-                trees[node] = Tree(node.name)
-            for edge_node in edges:
-                if isinstance(edge_node, Path):
-                    if edge_node not in trees.keys():
-                        trees[edge_node] = Tree(edge_node.name)
-                        trees[node].add(trees[edge_node])
-                elif isinstance(edge_node, File):
-                    trees[node].add(edge_node.name)
-        return trees[self.root]
-
     def pwd(self):
         return f"{self.cwd}"
 
-    def du(self, max_size=100000):
+    def du(self):
         successors = [successor for successor in nx.bfs_tree(self._tree, self.root)][::-1]
+
         for successor in successors:
             if isinstance(successor, Path):
                 for path, obj in self._tree.out_edges(successor):
                     if isinstance(obj, Path):
-                        self._tree.nodes[path]['cumulative_size'] += self._tree.nodes[obj]['cumulative_size']
+                        self._tree.nodes[path]["cumulative_size"] += self._tree.nodes[obj]["cumulative_size"]
                     elif isinstance(obj, File):
-                        self._tree.nodes[path]['size'] += self._tree.nodes[obj]['size']
-                        self._tree.nodes[path]['cumulative_size'] += self._tree.nodes[obj]['size']
+                        self._tree.nodes[path]["size"] += self._tree.nodes[obj]["size"]
+                        self._tree.nodes[path]["cumulative_size"] += self._tree.nodes[obj]["size"]
 
-        path_sizes = []
-        for node in self._tree:
-            if isinstance(node, Path):
-                path_sizes.append([self._tree.nodes[node]['cumulative_size'], self._tree.nodes[node]['size'], str(node)])
-        path_sizes = list(sorted(path_sizes, key=lambda x: x[0], reverse=True))
-        return list(filter(lambda p: p[0] < 100000, path_sizes))
+        successors = [successor for successor in nx.bfs_successors(self._tree, self.root)]
+        trees = {
+            self.root: Tree(
+                f"{self._tree.nodes[self.root]['cumulative_size']}\t[blue]{self.root.name}", guide_style="blue"
+            )
+        }
+        for node, edges in successors:
+            for edge_node in edges:
+                if isinstance(edge_node, Path):
+                    trees[edge_node] = Tree(
+                        f"{self._tree.nodes[edge_node]['cumulative_size']}\t[blue]{edge_node.name}", guide_style="blue"
+                    )
+                    trees[node].add(trees[edge_node])
+                elif isinstance(edge_node, File):
+                    trees[node].add(Tree(f"{self._tree.nodes[edge_node]['size']}\t[red]{edge_node.name}"))
+        return trees[self.root]
 
     @property
     def stdin_buffer(self):
@@ -155,9 +150,7 @@ class System:
                     f"{self._tree[child]['size']}\t{self._tree[child]['cumulative_size']}\t{self._tree[child]['name']}"
                 )
             elif isinstance(child, File):
-                contents[self.cwd].append(
-                    f"{self._tree[child]['size']}\t{self._tree[child]['name']}"
-                )
+                contents[self.cwd].append(f"{self._tree[child]['size']}\t{self._tree[child]['name']}")
         return "\n".join(contents[self.cwd])
 
     def rm(self, obj):
@@ -175,8 +168,6 @@ class System:
         command(*args)
 
 
-
-
 def stdin_from_file():
     with open("day-7-input.txt", "r") as f:
         data = [line for line in f.readlines()]
@@ -188,18 +179,18 @@ def stdin_from_file():
             line = line.strip()
             stdin = line.split(" ")
             command = stdin[0]
-            if command == 'cd':
-                stdin_buffer.append({'command': command, 'args': {'path': stdin[1]}})
-            elif command == 'ls':
+            if command == "cd":
+                stdin_buffer.append({"command": command, "args": {"path": stdin[1]}})
+            elif command == "ls":
                 continue
 
         elif re.match(r"\w", line[0]):
             line = line.strip()
             args = line.split(" ")
             if args[0].isdigit():
-                stdin_buffer.append({'command': 'fallocate', 'args': {'fullpath': args[1], 'size': int(args[0])}})
-            elif args[0].startswith('dir'):
-                stdin_buffer.append({'command': 'mkdir', 'args': {'fullpath': args[1]}})
+                stdin_buffer.append({"command": "fallocate", "args": {"fullpath": args[1], "size": int(args[0])}})
+            elif args[0].startswith("dir"):
+                stdin_buffer.append({"command": "mkdir", "args": {"fullpath": args[1]}})
 
     return stdin_buffer
 
@@ -208,10 +199,11 @@ if __name__ == "__main__":
     sys = System()
     stdin_buffer = stdin_from_file()
     for stdin in stdin_buffer:
-        sys.eval(stdin['command'], tuple(stdin['args'].values()))
+        sys.eval(stdin["command"], tuple(stdin["args"].values()))
     paths = sys.du()
-    answer = sum([path[0] for path in paths])
-    pprint(answer)
-    print(sys.tree)
+    print(paths)
+    # answer = sum([path[0] for path in paths])
+    # pprint(answer)
+#    print(sys.tree)
 #    pprint(sys.tree)
 #    print(sys.du())
