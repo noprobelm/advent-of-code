@@ -147,7 +147,8 @@ class System:
         self.fstree.add_edge(self.cwd, path)
         self.stdout_buffer = f"New path created: {path}"
 
-    def fallocate(self, filepath: str, size: int):
+    def fallocate(self, filepath: str, size: str):
+        size = int(size)
         parts = self.__get_path(filepath).parts
         file = File(parts)
         if file in self.fstree:
