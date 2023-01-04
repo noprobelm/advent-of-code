@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from rich.rule import Rule
-from rich.box import Box
 from rich.align import Align
-from rich.padding import Padding
 from rich.segment import Segment
 from rich.table import Table, Column
 from rich.panel import Panel
@@ -160,7 +158,11 @@ class System:
         self.disk_available -= size
 
     def cd(self, path: str):
-        self.cwd = self.__get_path(path)
+        path = self.__get_path(path)
+        if path not in self.fstree:
+            self.stdout_buffer = f"Abort: No such path {path}"
+            return
+        self.cwd = path
         self.stdout_buffer = f"Changing path to {path}"
 
     def ls(self, path: Optional[str] = None):
@@ -181,14 +183,26 @@ class System:
         #         contents[self.cwd].append(f"{self.fstree.nodes[child]['size']}\t{child}")
         # print("\n".join(contents[self.cwd]))
 
-    def rm(self, obj):
-        if Path(obj) in self.fstree:
-            obj = Path(obj)
-        elif File(obj) in self.fstree:
-            obj = File(obj)
-        successors = [successor for successor in nx.bfs_tree(self.fstree, obj)]
-        for successor in successors:
-            self.fstree.remove_node(successor)
+    def rm(self, fsobj: str):
+        path = self.__get_path(fsobj)
+        if path in self.fstree:
+            fsobj = path
+        elif File(path.parts) in self.fstree:
+            fsobj = File(path.parts)
+        else:
+            self.stdout_buffer = f"Abort: No such path or file '{fsobj}'"
+            return
+        disk_used_old = self.disk_used
+        tree = [node for node in nx.bfs_tree(self.fstree, fsobj)][::-1]
+        self.stdout_buffer = []
+        for node in tree:
+            self.fstree.remove_edges_from([edge for edge in self.fstree.edges(node)])
+            self.disk_used -= self.fstree.nodes[node]['size']
+            self.disk_available += self.fstree.nodes[node]['size']
+            self.fstree.remove_node(node)
+            self.stdout_buffer.append(f"Removed {node}")
+        self.stdout_buffer.append(f"Freed {disk_used_old - self.disk_used} of space. {self.disk_available} bytes remaining.")
+        self.stdout_buffer = '\n'.join(self.stdout_buffer)
 
     def du(self, as_tree=''):
         if as_tree != '-t':
@@ -240,9 +254,15 @@ class System:
 
     def eval(self, command, *args):
         command = getattr(self, command)
-        command(*args)
-        console.print(self.stdout_buffer)
-        self.stdout_buffer = None
+        try:
+            command(*args)
+            console.print(self.stdout_buffer)
+            self.stdout_buffer = None
+        except Exception as e:
+                if e == 'I/O operation on closed file':
+                    quit()
+                console.print_exception(show_locals=True)
+                console.print("[red]Uh oh! You found a bug! I'm sure the elves will get right on it... :santa:")
 
     def interactive(self):
         message = Welcome()
@@ -255,13 +275,7 @@ class System:
             args = stdin.split(' ')
             command = args[0]
             args = args[1:]
-            try:
-                self.eval(command, *args)
-            except Exception as e:
-                if e == 'I/O operation on closed file':
-                    quit()
-                console.print_exception(show_locals=True)
-                console.print("[red]Uh oh! You found a bug! I'm sure the elves will get right on it... :santa:")
+            self.eval(command, *args)
 
 
 class Welcome:
@@ -281,6 +295,7 @@ class Welcome:
         mode_msg = Text("Interactive Mode\nThere's not much to see here... type 'help' to learn more.", justify='center')
         yield Panel(mode_msg, style='blue')
 
+
 @dataclass
 class Help:
     num_files: int
@@ -292,8 +307,6 @@ class Help:
     cwd_tree: Tree
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-
-        message = []
         about_message = Text.assemble(
             ('\n', ''),
             ('Elf Off The Shelf ', 'red italic'),
@@ -336,7 +349,7 @@ class Help:
             ("and has an absolute path of ", 'blue'),
             (f"{self.largest_filepath}.", 'red'),
             ('\n\n', ''),
-            ('The current working director is ', 'blue'),
+            ('The current working directory is ', 'blue'),
             (f"{self.cwd}. ", 'red'),
             ('The filetree representation of the current working directory and its immediate children are\n', 'blue')
         )
