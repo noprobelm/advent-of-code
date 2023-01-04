@@ -1,64 +1,86 @@
 from dataclasses import dataclass
+from rich.padding import Padding
+from rich.segment import Segment
+from rich.table import Table, Column
+from rich.panel import Panel
+from rich.columns import Columns
 import re
+from typing import Optional
 import networkx as nx
 from rich.pretty import pprint
-from rich.console import Console, ConsoleOptions, RenderResult
+from rich.console import Console, ConsoleOptions, RenderResult, Group
 from rich import print
 from rich.tree import Tree
+from rich.text import Text
 import datetime
 
 console = Console()
 
 
-@dataclass
-class Path:
-    fullpath: str
+class __FileSystemObject:
+    def __init__(self, parts: list) -> None:
+        if not parts:
+            self.path = ''
+            self.name = ''
+            self.fullpath = ''
+            self.parts = []
+            self.pointer = tuple()
+            return
 
-    def __post_init__(self) -> None:
-        try:
-            if self.fullpath[-1] != "/":
-                self.fullpath = f"{self.fullpath}/"
-        except IndexError:
-            self.fullpath = "/"
-        self.parts = re.findall(r"\w+", self.fullpath)
-        if len(self.parts) > 0:
-            self.parts.insert(0, "")
-        else:
-            self.parts = [""]
-        self.name = f"{self.parts[-1]}/"
-        self.path = f"{'/'.join(self.parts[:-1])}/"
-
-    def __str__(self) -> str:
-        return f"{self.fullpath}"
-
-    def __hash__(self) -> int:
-        return hash((self.fullpath, type(self)))
-
-    def __eq__(self, other: "Path") -> bool:
-        if hash(other) == hash(self):
-            return True
-        return False
-
-
-@dataclass
-class File:
-    fullpath: str
-
-    def __post_init__(self):
-        parts = re.findall(r"[\.\w]+", self.fullpath)
-        self.path = f"/{'/'.join(parts[:-1])}"
         self.name = parts[-1]
+        if len(parts) == 1:
+            self.path = f"{'/'.join(parts[:-1])}"
+        elif len(parts) > 1:
+            self.path = f"/{'/'.join(parts[:-1])}"
+
+        self.fullpath = f"{self.path}/{self.name}"
+        self.parts = parts
+        self.pointer = tuple(parts)
 
     def __str__(self):
-        return f"{self.fullpath}{self.name}"
+        return f"{'/'.join([''] + self.parts)}"
 
     def __hash__(self):
-        return hash((self.fullpath, self.name, type(self)))
+        return hash((self.pointer, type(self)))
 
     def __eq__(self, other):
-        if hash(other) == hash(self):
+        if hash(self) == hash(other):
             return True
-        return False
+        else:
+            return False
+
+    @classmethod
+    def from_string(cls, fullpath: str):
+        parts = re.findall(r"[\.\w]+", fullpath)
+        if not parts:
+            return cls(parts)
+
+        return cls(parts)
+
+
+class Path(__FileSystemObject):
+    def __init__(self, parts):
+        super().__init__(parts)
+        self.path_size = 0
+        self.cumulative_size = 0
+        self.name = f"{self.name}/"
+
+    def __str__(self):
+        return f"{'/'.join([''] + self.parts + [''])}"
+
+    @classmethod
+    def root(cls) -> "Path":
+        return cls([])
+
+    @classmethod
+    def join(cls, predecessors: "Path", successors: "Path") -> "Path":
+        joined = predecessors.parts + successors.parts
+        return cls(joined)
+
+class File(__FileSystemObject):
+    def __init__(self, parts, size: int = 0):
+        super().__init__(parts)
+        self.size = size
 
 
 class System:
@@ -66,7 +88,7 @@ class System:
         self.disk_space = 70000000
         self.disk_available = self.disk_space
         self.disk_used = 0
-        self.root = Path(fullpath="")
+        self.root = Path.root()
         self.cwd = self.root
         self.fstree = nx.DiGraph()
         self.fstree.add_node(self.root, objtype=type(Path), size=0, cumulative_size=0)
@@ -74,12 +96,37 @@ class System:
         self.stdout_buffer = None
 
     def __get_path(self, path: str) -> Path:
-        if not path or path.startswith("/"):
-            return Path(path)
-        if path[0].isalpha():
-            return Path(f"{self.cwd}{path}/")
-        if path == "..":
-            return Path(self.cwd.path)
+        if path is None:
+            return self.cwd
+        if path.startswith('/'):
+            return Path.from_string(path)
+        elif path.startswith('..'):
+            return Path.from_string(self.cwd.path)
+        else:
+            return Path.join(self.cwd, Path.from_string(path))
+
+    def help(self):
+        num_files = 0
+        num_paths = 0
+        largest_size = 0
+        for node in self.fstree.nodes:
+            if isinstance(node, File):
+                num_files += 1
+                if self.fstree.nodes[node]['size'] > largest_size:
+                    largest_size += self.fstree.nodes[node]['size']
+                    largest_filepath = str(node)
+                    largest_filename = node.name
+            else:
+                num_paths += 1
+        tree = Tree(str(self.cwd), guide_style='blue')
+        for u, v in self.fstree.out_edges(self.cwd):
+            if isinstance(v, Path):
+                tree.add(f"[blue]{v}")
+            else:
+                tree.add(f"[red]{v}")
+        help_message = Help(num_files=num_files, num_paths=num_paths, largest_filesize=largest_size, largest_filepath=largest_filepath,
+                    largest_filename=largest_filename, cwd=self.cwd, cwd_tree=tree)
+        self.stdout_buffer = help_message
 
     def pwd(self):
         return f"{self.cwd}"
@@ -92,33 +139,41 @@ class System:
 
         self.fstree.add_node(path, objtype=type(Path), name=path.name, size=0, cumulative_size=0)
         self.fstree.add_edge(self.cwd, path)
+        self.stdout_buffer = f"New path created: {path}"
 
-    def fallocate(self, fullpath: str, size: int):
-        fullpath = self.__get_path(fullpath)
-        file = File(str(fullpath)[:-1])
+    def fallocate(self, filepath: str, size: int):
+        parts = self.__get_path(filepath).parts
+        file = File(parts)
         if file in self.fstree:
             pprint(f"File {file} already exists")
             return
         self.fstree.add_node(file, objtype=type(File), size=size)
         self.fstree.add_edge(self.cwd, file)
+        self.stdout_buffer = f"New file created: {file}"
         self.disk_used += size
         self.disk_available -= size
 
     def cd(self, path: str):
-        path = self.__get_path(path)
-        self.cwd = path
-        print(f"Changed path to {self.cwd}")
+        self.cwd = self.__get_path(path)
+        self.stdout_buffer = f"Changing path to {path}"
 
-    def ls(self):
-        contents = {self.cwd: []}
-        for path, child in self.fstree.edges(self.cwd):
-            if isinstance(child, Path):
-                contents[self.cwd].append(
-                    f"{self.fstree[child]['size']}\t{self.fstree.nodes[child]['cumulative_size']}\t{child}"
-                )
-            elif isinstance(child, File):
-                contents[self.cwd].append(f"{self.fstree.nodes[child]['size']}\t{child}")
-        print("\n".join(contents[self.cwd]))
+    def ls(self, path: Optional[str] = None):
+        path = self.__get_path(path)
+        children = []
+        for _path, child in self.fstree.out_edges(path):
+            children.append(child.name)
+        columns = Columns(children, equal=True)
+        self.stdout_buffer = columns
+
+        # contents = {self.cwd: []}
+        # for path, child in self.fstree.edges(self.cwd):
+        #     if isinstance(child, Path):
+        #         contents[self.cwd].append(
+        #             f"{self.fstree[child]['size']}\t{self.fstree.nodes[child]['cumulative_size']}\t{child}"
+        #         )
+        #     elif isinstance(child, File):
+        #         contents[self.cwd].append(f"{self.fstree.nodes[child]['size']}\t{child}")
+        # print("\n".join(contents[self.cwd]))
 
     def rm(self, obj):
         if Path(obj) in self.fstree:
@@ -129,8 +184,8 @@ class System:
         for successor in successors:
             self.fstree.remove_node(successor)
 
-    def du(self, path: str = '', as_tree: bool = False):
-        path = self.__get_path('')
+    def du(self, path: str = '/', as_tree=False):
+        path = self.__get_path(path)
         for node in self.fstree.nodes:
             if isinstance(node, Path):
                 self.fstree.nodes[node]['size'] = 0
@@ -174,29 +229,82 @@ class System:
                         trees[node].add(Tree(f"{self.fstree.nodes[edge_node]['size']}\t[red]{edge_node.name}"))
             stdout = trees[self.root]
         self.stdout_buffer = stdout
-        return self.stdout_buffer
 
-    def eval(self, command, args):
+    def eval(self, command, *args):
         command = getattr(self, command)
         command(*args)
+        console.print(self.stdout_buffer)
+        self.stdout_buffer = None
 
     def interactive(self):
+        message = Welcome()
+        console.print(message)
         arrow = ":arrow_right: "
         while True:
             now = datetime.datetime.now().strftime("%Y-%m-%d")
-            prompt = ' '.join([now, arrow])
+            prompt = ' '.join([now, f"[blue]{self.cwd}", arrow])
             stdin = console.input(prompt)
             args = stdin.split(' ')
             command = args[0]
             args = args[1:]
-            if self.stdout_buffer:
-                print(self.stdout_buffer)
-                self.stdout_buffer = None
+            try:
+                self.eval(command, *args)
+            except:
+                console.print_exception(show_locals=True)
 
 
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         pass
+
+class Welcome:
+    def __init__(self):
+        with open('banner.txt', 'r') as f:
+            self.banner = f.read()
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        banner = Text(self.banner, style='blue', justify='center')
+        message = []
+        message.append(Text("Entering ineractive mode... There's not too much to see here right now.", style='blue'))
+        message.append(Text("This program was created to solve 'Day 7' of the 2022 Advent of Code challenge. This far exceeds the puzzle's requirements, but I thought it would be fun to experiment... Enjoy."))
+        command_grid = Table
+        yield banner
+        for _ in range(2):
+            yield Segment.line()
+        mode_msg = Text("Interactive Mode\nThere's not much to see here... type 'help' to learn more.", justify='center')
+        yield Panel(mode_msg, style='blue')
+
+@dataclass
+class Help:
+    num_files: int
+    num_paths: int
+    largest_filename: str
+    largest_filepath: str
+    largest_filesize: int
+    cwd: str
+    cwd_tree: Tree
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        message = []
+        message.append(Text("'Elf Off The Shelf' is a little joke operating system I made while solving 'day 7' of the 2022 'Advent of Code' challenge. The puzzle called to create and navigate a filetree-like and calculate some of its details. Instead, I wrote the full OS for it."))
+        message.append(Text("A list of valid commands are below and to your right. They're kind of functional. Give them a shot."))
+        details = Table.grid()
+        details.add_row(Text(f"This file system has {self.num_files} files among {self.num_paths} paths.\nThe largest file in the system is {self.largest_filename}, whose absolute path is {self.largest_filepath}.\nThe current working directory is {self.cwd}, whose structure looks like:\n"))
+        details.add_row(self.cwd_tree)
+        commands = Table('Command', 'Description', style='blue', show_edge=False)
+
+        commands.add_row('ls', 'List the contents of the current working directory')
+        commands.add_row('cd', 'Change the current directory')
+        commands.add_row('pwd', 'List the name of the current directory')
+        commands.add_row('rm' ,'Remove a specified file')
+        commands.add_row('du', 'List the contents of the filesystem as a filetree with file sizes')
+        grid = Table(Column('File System Details'), Column('Command Table'), show_header=False, show_edge=False, style='blue')
+        grid.add_row(details, commands)
+        grid.show_lines = True
+        yield Text('\n').join(message)
+        for i in range(3):
+            yield Segment.line()
+        yield grid
 
 
 def stdin_from_file():
@@ -228,9 +336,14 @@ def stdin_from_file():
 
 if __name__ == "__main__":
     sys = System()
+    # sys.eval('mkdir', '/home')
+    # sys.eval('cd', 'home')
+    # sys.eval('fallocate', '/home/test.txt', 125)
+    # sys.eval('ls')
+    # sys.eval('du', '/', True)
+
     stdin_buffer = stdin_from_file()
     print(stdin_buffer)
     for stdin in stdin_buffer:
-        sys.eval(stdin["command"], tuple(stdin["args"].values()))
-    paths = sys.du()
-    print(paths)
+        sys.eval(stdin["command"], *stdin["args"].values())
+    sys.interactive()
