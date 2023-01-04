@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from rich.rule import Rule
 from rich.box import Box
 from rich.align import Align
 from rich.padding import Padding
@@ -258,6 +259,7 @@ class System:
                 if e == 'I/O operation on closed file':
                     quit()
                 console.print_exception(show_locals=True)
+                console.print("[red]Uh oh! You found a bug! I'm sure the elves will get right on it... :santa:")
 
 
 class Welcome:
@@ -290,7 +292,8 @@ class Help:
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
 
         message = []
-        about_message = Panel(Text.assemble(
+        about_message = Text.assemble(
+            ('\n', ''),
             ('Elf Off The Shelf ', 'red italic'),
             ('is a little joke of an emulated operating system I made while solving ', 'blue'),
             ('day 7 ', 'red'),
@@ -299,9 +302,22 @@ class Help:
             ('challenge. ', 'blue'),
             ('The challenge has the user develop a filesystem-like relational data structure based on puzzle input '
              'and perform some basic calculations on it.', 'blue'),
+            ('\n', '')
+        )
+        rule = Rule(style='blue', title="How To Use")
+        how_to_use = Text.assemble(
+            ('\n', ''),
+            ('Just try executing some of the commands listed below and to your right. They work as you might expect them to (mostly). ', 'blue'),
             ('\n\n', ''),
-            ("A list of valid commands are below and to your right. They're kind of functional. Give them a shot.", 'blue')
-        ), title='About', style='blue', width=console.width//2)
+            ('Bear in mind this is really just meant to emulate a file system. You can create file system objects (directories and files), navigate through the file tree structure, and delete objects.'),
+            ('\n\n', ''),
+            ('Tips:', 'underline blue'),
+            ('\n', ''),
+            ("- 'du' is probably the most compelling command in this system. In addition to producing the standard output seen in the canonical shell version of 'du', it can output a filetree when passed the '-f' flag.\n", 'blue'),
+            ("- Hundreds of command use cases, if not more, are not accounted for. If you break something, a postcard will be displayed and promptly mailed to 123 ELF ROAD, NORTH POLE 88888"),
+            ('\n', '')
+        )
+        about_message = Panel(Group(about_message, rule, how_to_use), title="About", style='blue', width=int(console.width/1.5))
 
         details_message = Text.assemble(
             ('This file system has ', 'blue'),
