@@ -147,8 +147,7 @@ class System:
         self.fstree.add_edge(self.cwd, path)
         self.stdout_buffer = f"New path created: {path}"
 
-    def fallocate(self, filepath: str, size: str):
-        size = int(size)
+    def fallocate(self, filepath: str, size: int):
         parts = self.__get_path(filepath).parts
         file = File(parts)
         if file in self.fstree:
@@ -191,8 +190,10 @@ class System:
         for successor in successors:
             self.fstree.remove_node(successor)
 
-    def du(self, path: str = '/', as_tree=False):
-        path = self.__get_path(path)
+    def du(self, as_tree=''):
+        if as_tree != '-t':
+            as_tree = ''
+        path = self.root
         for node in self.fstree.nodes:
             if isinstance(node, Path):
                 self.fstree.nodes[node]['size'] = 0
@@ -314,7 +315,9 @@ class Help:
             ('\n\n', ''),
             ('Tips:', 'underline blue'),
             ('\n', ''),
-            ("- 'du' is probably the most compelling command in this system. In addition to producing the standard output seen in the canonical shell version of 'du', it can output a filetree when passed the '-f' flag.\n", 'blue'),
+            ('- The file system you find yourself in was pre-generated from the Advent of Code puzzle input. The current working directory is displayed in the cmdline prompt'),
+            ('\n', ''),
+            ("- 'du' is probably the most compelling command in this system, although currently it only shows you the full file structure. In addition to producing the standard output seen in the canonical shell version of 'du', it can output a filetree when passed the '-t' flag.\n", 'blue'),
             ("- Hundreds of command use cases, if not more, are not accounted for. If you break something, a postcard will be displayed and promptly mailed to 123 ELF ROAD, NORTH POLE 88888"),
             ('\n', '')
         )
