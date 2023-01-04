@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from rich.box import Box
+from rich.align import Align
 from rich.padding import Padding
 from rich.segment import Segment
 from rich.table import Table, Column
@@ -128,6 +130,9 @@ class System:
                     largest_filename=largest_filename, cwd=self.cwd, cwd_tree=tree)
         self.stdout_buffer = help_message
 
+    def exit(self):
+        quit()
+
     def pwd(self):
         self.stdout_buffer = f"{self.cwd}"
 
@@ -249,13 +254,11 @@ class System:
             args = args[1:]
             try:
                 self.eval(command, *args)
-            except:
+            except Exception as e:
+                if e == 'I/O operation on closed file':
+                    quit()
                 console.print_exception(show_locals=True)
 
-
-
-    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-        pass
 
 class Welcome:
     def __init__(self):
@@ -285,12 +288,43 @@ class Help:
     cwd_tree: Tree
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+
         message = []
-        message.append(Text("'Elf Off The Shelf' is a little joke operating system I made while solving 'day 7' of the 2022 'Advent of Code' challenge. The puzzle called to create and navigate a filetree-like and calculate some of its details. Instead, I wrote the full OS for it."))
-        message.append(Text("A list of valid commands are below and to your right. They're kind of functional. Give them a shot."))
+        about_message = Panel(Text.assemble(
+            ('Elf Off The Shelf ', 'red italic'),
+            ('is a little joke of an emulated operating system I made while solving ', 'blue'),
+            ('day 7 ', 'red'),
+            ('of the 2022 ', 'blue'),
+            ('Advent of Code ', 'red italic'),
+            ('challenge. ', 'blue'),
+            ('The challenge has the user develop a filesystem-like relational data structure based on puzzle input '
+             'and perform some basic calculations on it.', 'blue'),
+            ('\n\n', ''),
+            ("A list of valid commands are below and to your right. They're kind of functional. Give them a shot.", 'blue')
+        ), title='About', style='blue', width=console.width//2)
+
+        details_message = Text.assemble(
+            ('This file system has ', 'blue'),
+            (f"{self.num_files} ", 'red'),
+            ('files among ', 'blue'),
+            (f"{self.num_paths} ", 'red'),
+            ('paths. ', 'blue'),
+            ('The largest file in the system is ', 'blue'),
+            (f"{self.largest_filename} ", 'red'),
+            ('whose size is ', 'blue'),
+            (f"{self.largest_filesize} ", 'red'),
+            ("and has an absolute path of ", 'blue'),
+            (f"{self.largest_filepath}.", 'red'),
+            ('\n\n', ''),
+            ('The current working director is ', 'blue'),
+            (f"{self.cwd}. ", 'red'),
+            ('The filetree representation of the current working directory and its immediate children are\n', 'blue')
+        )
         details = Table.grid()
-        details.add_row(Text(f"This file system has {self.num_files} files among {self.num_paths} paths.\nThe largest file in the system is {self.largest_filename}, whose absolute path is {self.largest_filepath}.\nThe current working directory is {self.cwd}, whose structure looks like:\n"))
+        details.add_row(details_message)
         details.add_row(self.cwd_tree)
+        details = Panel(details, style='blue', title='System Details')
+        about_message = Align(about_message, 'center', width=console.width)
         commands = Table('Command', 'Description', style='blue', show_edge=False)
 
         commands.add_row('ls', 'List the contents of the current working directory')
@@ -298,13 +332,14 @@ class Help:
         commands.add_row('pwd', 'List the name of the current directory')
         commands.add_row('rm' ,'Remove a specified file')
         commands.add_row('du', 'List the contents of the filesystem as a filetree with file sizes')
-        grid = Table(Column('File System Details'), Column('Command Table'), show_header=False, show_edge=False, style='blue')
-        grid.add_row(details, commands)
-        grid.show_lines = True
-        yield Text('\n').join(message)
-        for i in range(3):
-            yield Segment.line()
-        yield grid
+        commands = Panel(commands, style='blue', title='Commands')
+
+        help_grid = Table.grid(Column('File System Details'), Column('Command Table'))
+        help_grid.style = 'blue'
+        help_grid.add_row(details, commands)
+        help_grid.show_lines = True
+        yield about_message
+        yield help_grid
 
 
 def stdin_from_file():
