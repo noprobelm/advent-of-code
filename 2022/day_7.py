@@ -129,7 +129,7 @@ class System:
         self.stdout_buffer = help_message
 
     def pwd(self):
-        return f"{self.cwd}"
+        self.stdout_buffer = f"{self.cwd}"
 
     def mkdir(self, path: str):
         path = self.__get_path(path)
