@@ -1,13 +1,11 @@
+import re
+from typing import Optional, Any, Sequence
+import networkx as nx
+import datetime
 from rich.columns import Columns
-from rich.pretty import pprint
 from rich.console import Console
 from rich.tree import Tree
 from eots_assets import Welcome, Help
-import re
-from typing import Optional
-import networkx as nx
-
-import datetime
 
 
 class __FileSystemObject:
@@ -15,7 +13,6 @@ class __FileSystemObject:
         if not parts:
             self.path = ""
             self.name = ""
-            self.fullpath = ""
             self.parts = []
             self.pointer = tuple()
             return
@@ -26,21 +23,17 @@ class __FileSystemObject:
         elif len(parts) > 1:
             self.path = f"/{'/'.join(parts[:-1])}"
 
-        self.fullpath = f"{self.path}/{self.name}"
         self.parts = parts
         self.pointer = tuple(parts)
 
     def __str__(self) -> str:
         return f"{'/'.join([''] + self.parts)}"
 
-    def __hash__(self) -> bool:
+    def __hash__(self) -> int:
         return hash((self.pointer, type(self)))
 
-    def __eq__(self, other) -> bool:
-        if hash(self) == hash(other):
-            return True
-        else:
-            return False
+    def __eq__(self, other: Any) -> bool:
+        return hash(self) == hash(other)
 
     @classmethod
     def from_string(cls, fullpath: str) -> "__FileSystemObject":
@@ -95,7 +88,6 @@ class System:
                     command = line[0]
                     args = line[1:]
                     self.eval(command, *args)
-
         self.cwd = self.root
 
     def __get_path(self, path: str) -> Path:
@@ -126,16 +118,16 @@ class System:
         tree = Tree(str(self.cwd), guide_style="blue")
         for u, v in self.fstree.out_edges(self.cwd):
             if isinstance(v, Path):
-                tree.add(f"[blue]{v}")
+                tree.add(f"[blue]{v}[/blue]")
             else:
-                tree.add(f"[red]{v}")
+                tree.add(f"[red]{v}[/red]")
         help_message = Help(
             num_files=num_files,
             num_paths=num_paths,
             largest_filesize=largest_size,
             largest_filepath=largest_filepath,
             largest_filename=largest_filename,
-            cwd=self.cwd,
+            cwd=str(self.cwd),
             cwd_tree=tree,
         )
         self.stdout_buffer = help_message
@@ -144,58 +136,63 @@ class System:
         quit()
 
     def pwd(self) -> None:
-        self.stdout_buffer = f"{self.cwd}"
+        self.stdout_buffer = f"[blue]{self.cwd}[/blue]"
 
     def mkdir(self, path: str):
         path = self.__get_path(path)
         if path in self.fstree:
-            self.stdout_buffer = f"Abort: Path {path} already exists."
+            self.stdout_buffer = f"Abort: Path [blue]{path}[/blue] already exists."
             return
 
         self.fstree.add_node(path, name=path.name, size=0, cumulative_size=0)
         self.fstree.add_edge(self.cwd, path)
-        self.stdout_buffer = f"New path created: {path}"
+        self.stdout_buffer = f"New path created: [blue]{path}[/blue]"
 
     def fallocate(self, filepath: str, size: int):
         size = int(size)
         parts = self.__get_path(filepath).parts
         file = File(parts)
         if file in self.fstree:
-            self.stdout_buffer = f"Abort: File {file} already exists"
+            self.stdout_buffer = f"Abort: File [red]{file}[/red] already exists"
             return
+        elif self.disk_used + size > self.disk_space:
+            self.stdout_buffer = f"Abort: Disk full. Free at least {size - self.disk_available} bytes and try again."
         self.fstree.add_node(file, objtype=type(File), size=size)
         self.fstree.add_edge(self.cwd, file)
-        self.stdout_buffer = f"New file created: {file}"
+        self.stdout_buffer = f"New file created: [red]{file}[/red]"
         self.disk_used += size
         self.disk_available -= size
 
     def cd(self, path: str):
         path = self.__get_path(path)
         if path not in self.fstree:
-            self.stdout_buffer = f"Abort: No such path {path}"
+            self.stdout_buffer = f"Abort: No such path [blue]{path}[/blue]"
             return
         self.cwd = path
-        self.stdout_buffer = f"Changing path to {path}"
+        self.stdout_buffer = f"Changing path to [blue]{path}[/blue]"
 
     def ls(self, path: Optional[str] = None) -> None:
         path = self.__get_path(path)
         children = []
         for _path, child in self.fstree.out_edges(path):
-            children.append(child.name)
+            if isinstance(child, Path):
+                children.append(f"[blue]{child.name}[/blue]")
+            elif isinstance(child, File):
+                children.append(f"[red]{child.name}[/red]")
         columns = Columns(children, equal=True)
         self.stdout_buffer = columns
 
     def rm(self, fsobj: str) -> None:
         path = self.__get_path(fsobj)
         if path is self.root:
-            self.stdout_buffer = f"Come on... You know what you're doing ;)"
+            self.stdout_buffer = f":santa: Come on... You think Santa doesn't see you? ;) :santa:"
             return
         elif path in self.fstree:
             fsobj = path
         elif File(path.parts) in self.fstree:
             fsobj = File(path.parts)
         else:
-            self.stdout_buffer = f"Abort: No such path or file '{fsobj}'"
+            self.stdout_buffer = f"Abort: No such path or file '{path}'"
             return
         disk_used_old = self.disk_used
         tree = [node for node in nx.bfs_tree(self.fstree, fsobj)][::-1]
@@ -207,7 +204,7 @@ class System:
             self.fstree.remove_node(node)
             self.stdout_buffer.append(f"Removed {node}")
         self.stdout_buffer.append(
-            f"Freed {disk_used_old - self.disk_used} of space. {self.disk_available} bytes remaining."
+            f"Freed {disk_used_old - self.disk_used} bytes of space. {self.disk_available} bytes remaining."
         )
         self.stdout_buffer = "\n".join(self.stdout_buffer)
 
@@ -256,7 +253,7 @@ class System:
             stdout = trees[self.root]
         self.stdout_buffer = stdout
 
-    def eval(self, command, *args) -> None:
+    def eval(self, command: str, *args: Sequence[str]) -> None:
         command = getattr(self, command)
         command(*args)
         self.console.print(self.stdout_buffer)
@@ -295,7 +292,7 @@ class System:
                         self.fstree.nodes[child]["size"] += self.fstree.nodes[_child_obj]["size"]
                         self.fstree.nodes[child]["cumulative_size"] += self.fstree.nodes[_child_obj]["size"]
 
-        sizes = [self.fstree.nodes[node]['cumulative_size'] for node in self.fstree.nodes if isinstance(node, Path)]
+        sizes = [self.fstree.nodes[node]["cumulative_size"] for node in self.fstree.nodes if isinstance(node, Path)]
         return sum(list(filter(lambda s: s < 100000, sizes)))
 
     def _solve_part_2(self):
@@ -303,7 +300,7 @@ class System:
         # install a new package.
         minimum_space = 30000000
         disk_needed = minimum_space - self.disk_available
-        sizes = [self.fstree.nodes[node]['cumulative_size'] for node in self.fstree.nodes if isinstance(node, Path)]
+        sizes = [self.fstree.nodes[node]["cumulative_size"] for node in self.fstree.nodes if isinstance(node, Path)]
         sizes = list(sorted(sizes))
         for size in sizes:
             if size > disk_needed:
