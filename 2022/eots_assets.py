@@ -68,7 +68,7 @@ class Help:
             ),
             ("\n\n", ""),
             (
-                "Bear in mind this is really just meant to emulate a file system. You can create file system objects (directories and files), navigate through the file tree structure, and delete objects."
+                "Bear in mind this is really just meant to emulate a file system. You can create file system objects (directories and files), navigate through the file tree structure, and delete objects. You can't do much else."
             ),
             ("\n\n", ""),
             ("Tips:", "underline blue"),
@@ -82,7 +82,10 @@ class Help:
                 "blue",
             ),
             (
-                "- Hundreds of command use cases, if not more, are not accounted for. If you break something, a postcard will be displayed and promptly mailed to 123 ELF ROAD, NORTH POLE 88888"
+                "- Hundreds of command use cases, if not more, are not accounted for. If you break something, a postcard will be displayed and promptly mailed to ", ''
+            ),
+            (
+                "123 ELF ROAD, NORTH POLE 88888", 'underline blue'
             ),
             ("\n", ""),
         )
@@ -119,6 +122,8 @@ class Help:
         commands.add_row("pwd", "List the name of the current directory")
         commands.add_row("rm", "Remove a specified file")
         commands.add_row("du", "List the contents of the filesystem as a filetree with file sizes")
+        commands.add_row("help", "Display this help message")
+        commands.add_row("exit", "Exit the emulator")
         commands = Panel(commands, style="blue", title="Commands")
 
         help_grid = Table.grid(Column("File System Details"), Column("Command Table"))
