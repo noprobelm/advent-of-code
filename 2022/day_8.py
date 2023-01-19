@@ -10,7 +10,7 @@ class Tree:
     y: int
     height: int = 0
     is_visible: bool = None
-    visibility_score: int = 0
+    scenic_score: int = 0
 
     def __hash__(self):
         return hash((self.x, self.y))
