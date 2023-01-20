@@ -94,7 +94,7 @@ class Forest(dict):
             [visible_north, visible_east, visible_west, visible_south]
         )
 
-        scores = [scores[score] for score in scores if scores[score] > 0]
+        scores = [scores[cardinal] for cardinal in scores if scores[cardinal] > 0]
         self[tree]["visibility_score"] = reduce(operator.mul, scores)
 
 
