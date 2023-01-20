@@ -30,6 +30,17 @@ class Forest(dict):
         for tree in self:
             self.get_visibility(tree)
 
+    @property
+    def num_visible(self) -> int:
+        return len([tree for tree in self if self[tree]["visible"]])
+
+    @property
+    def highest_score(self) -> tuple:
+        highest_score = max([forest[tree]["visibility_score"] for tree in forest])
+        highest_scoring_tree = list(filter(lambda tree: forest[tree]["visibility_score"] == highest_score, forest))
+
+        return highest_scoring_tree, highest_score
+
     def get_visibility(self, tree: Tree) -> None:
         """
         Determine the visibility and visibility scores of a tree. The algorithm achieves this by incrementing or
@@ -115,9 +126,7 @@ class Forest(dict):
         else:
             visible_west = True
 
-        self[tree]["visible"] = any(
-            [visible_north, visible_east, visible_west, visible_south]
-        )
+        self[tree]["visible"] = any([visible_north, visible_east, visible_west, visible_south])
 
         scores = [scores[cardinal] for cardinal in scores if scores[cardinal] > 0]
         self[tree]["visibility_score"] = reduce(operator.mul, scores)
@@ -129,15 +138,9 @@ if __name__ == "__main__":
 
     forest = Forest(data)
 
-    num_visible = len([tree for tree in forest if forest[tree]["visible"]])
-    highest_score = max([forest[tree]["visibility_score"] for tree in forest])
-    highest_scoring_tree = list(
-        filter(lambda tree: forest[tree]["visibility_score"] == highest_score, forest)
-    )[0]
+    console.print(f"The number of visible trees from each perspective along the perimeter is {forest.num_visible}")
 
+    highest_scoring = forest.highest_score
     console.print(
-        f"The number of visible trees from each perspective along the perimeter is {num_visible}"
-    )
-    console.print(
-        f"The tree with the highest visibility score is {highest_scoring_tree}, with a score of {highest_score}"
+        f"The tree with the highest visibility score is {highest_scoring[0]}, with a score of {highest_scoring[1]}"
     )
