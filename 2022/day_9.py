@@ -14,46 +14,40 @@ class Position:
 
 
 class Rope:
-    def __init__(self):
-        self.movement_mapper = {
-            "U": {"axis": 0, "direction": 1},
-            "D": {"axis": 0, "direction": -1},
-            "L": {"axis": 1, "direction": -1},
-            "R": {"axis": 1, "direction": 1},
-        }
-        self.head, self.tail = Position(), Position()
-        self.movement_history = {
-            "head": {Position(0, 0): 1},
-            "tail": {Position(0, 0): 1},
-        }
+    movement_mapper = {
+        "U": {"axis": 0, "direction": 1},
+        "D": {"axis": 0, "direction": -1},
+        "L": {"axis": 1, "direction": -1},
+        "R": {"axis": 1, "direction": 1},
+    }
 
-    def move(self, instruction):
-        axis = self.movement_mapper[instruction[0]]["axis"]
-        direction = self.movement_mapper[instruction[0]]["direction"]
-        magnitude = instruction[1]
+    def __init__(self, num_knots: int):
+        self.num_knots = num_knots
+        for knot in range(num_knots):
+            setattr(self, f"knot_{knot}", Position())
+        self.tail_history = set({Position()})
 
-        def update_head():
+    def move(self, move):
+        axis = self.movement_mapper[move[0]]["axis"]
+        direction = self.movement_mapper[move[0]]["direction"]
+        magnitude = move[1]
+
+        for move in range(magnitude):
+            leader_old = Position(self.knot_0.x, self.knot_0.y)
             if axis == 0:
-                self.head = Position(self.head.x, self.head.y + direction)
+                self.knot_0 = Position(self.knot_0.x, self.knot_0.y + direction)
             elif axis == 1:
-                self.head = Position(self.head.x + direction, self.head.y)
-            try:
-                self.movement_history["head"][Position(self.head.x, self.head.y)] += 1
-            except KeyError:
-                self.movement_history["head"][Position(self.head.x, self.head.y)] = 1
+                self.knot_0 = Position(self.knot_0.x + direction, self.knot_0.y)
 
-        def update_tail():
-            if abs(self.tail.x - self.head.x) > 1 or abs(self.tail.y - self.head.y) > 1:
-                self.tail = head_old
-            try:
-                self.movement_history["tail"][Position(self.tail.x, self.tail.y)] += 1
-            except KeyError:
-                self.movement_history["tail"][Position(self.tail.x, self.tail.y)] = 1
+            for knot in range(1, self.num_knots):
+                leader = getattr(self, f"knot_{knot - 1}")
+                follower = getattr(self, f"knot_{knot}")
+                if abs(follower.x - leader.x) > 1 or abs(follower.y - leader.y) > 1:
+                    follower = Position(leader_old.x, leader_old.y)
+                    setattr(self, f"knot_{knot}", follower)
+                leader_old = Position(leader.x, leader.y)
 
-        for _ in range(magnitude):
-            head_old = Position(self.head.x, self.head.y)
-            update_head()
-            update_tail()
+            self.tail_history.add(getattr(self, f"knot_{self.num_knots-1}"))
 
 
 if __name__ == "__main__":
@@ -64,8 +58,14 @@ if __name__ == "__main__":
         move = move.split(" ")
         moves[idx] = [move[0], int(move[1])]
 
-    rope = Rope()
+    # Puzzle 1
+    rope = Rope(num_knots=2)
     for move in moves:
         rope.move(move)
+    print(len(rope.tail_history))
 
-    print(len(rope.movement_history["tail"]))
+    # Puzzle 2
+    rope = Rope(num_knots=10)
+    for move in moves:
+        rope.move(move)
+    print(len(rope.tail_history))
