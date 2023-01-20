@@ -109,13 +109,15 @@ if __name__ == "__main__":
 
     forest = Forest(data)
 
-    num_visible = [tree for tree in forest if forest[tree]["visible"]]
+    num_visible = len([tree for tree in forest if forest[tree]["visible"]])
     highest_score = max([forest[tree]["visibility_score"] for tree in forest])
     highest_scoring_tree = list(
-        filter(lambda tree: tree["visibility_score"] == highest_score, forest)
-    )
+        filter(lambda tree: forest[tree]["visibility_score"] == highest_score, forest)
+    )[0]
 
     console.print(
         f"The number of visible trees from each perspective along the perimeter is {num_visible}"
     )
-    console.print("The tree")
+    console.print(
+        f"The tree with the highest visibility score is {highest_scoring_tree}, with a score of {highest_score}"
+    )
