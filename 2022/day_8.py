@@ -8,7 +8,13 @@ Tree = namedtuple("Tree", "x y")
 
 
 class Forest(dict):
-    def __init__(self, data: list[list]):
+    def __init__(self, data: list[list]) -> None:
+        """
+        Accepts a 2d array with axis of equal length; each field is interpreted as the height of a tree.
+
+        The result is a subclassed dict of these characteristics:
+        dict[namedtuple[x, y], height[int], visible[bool], visibliity_score[int]]
+        """
         trees = {}
         for y in range(len(data)):
             for x in range(len(data[y])):
@@ -24,7 +30,21 @@ class Forest(dict):
         for tree in self:
             self.get_visibility(tree)
 
-    def get_visibility(self, tree):
+    def get_visibility(self, tree: Tree) -> None:
+        """
+        Determine the visibility and visibility scores of a tree. The algorithm achieves this by incrementing or
+        decrementing x and y from the target tree's position, comparing height values, and incrementing the score as
+        necessary until all relevant neighbors have been explored.
+
+        Visible from the outside:
+        As we explore a tree's neighbors to calculate visibility score, we simulataneously determine visibility from the
+        outside:
+            - If a tree's x or y position is found to be xmin, xmax, ymin, or ymax, it is deemed visible from the outside.
+            - If not, visibility is deemed True if a relevant neighbor's xpos or ypos are found to be equal to these
+              values.
+            - If neither of these cases are encountered, the tree is not visible from the outside from the cardinal
+              direction.
+        """
         scores = {"north": 0, "east": 0, "south": 0, "west": 0}
 
         if tree.y > self.y_min:
