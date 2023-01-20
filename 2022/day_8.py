@@ -10,7 +10,7 @@ Tree = namedtuple("Tree", "x y")
 class Forest(dict):
     def __init__(self, data: list[list]) -> None:
         """
-        Accepts a 2d array with axis of equal length; each field is interpreted as the height of a tree.
+        Accepts a 2d list with axis of equal length; each field is interpreted as the height of a tree.
 
         The result is a subclassed dict of these characteristics:
         dict[namedtuple[x, y], height[int], visible[bool], visibliity_score[int]]
@@ -37,7 +37,11 @@ class Forest(dict):
     @property
     def highest_score(self) -> tuple:
         highest_score = max([forest[tree]["visibility_score"] for tree in forest])
-        highest_scoring_tree = list(filter(lambda tree: forest[tree]["visibility_score"] == highest_score, forest))
+        highest_scoring_tree = list(
+            filter(
+                lambda tree: forest[tree]["visibility_score"] == highest_score, forest
+            )
+        )
 
         return highest_scoring_tree, highest_score
 
@@ -126,7 +130,9 @@ class Forest(dict):
         else:
             visible_west = True
 
-        self[tree]["visible"] = any([visible_north, visible_east, visible_west, visible_south])
+        self[tree]["visible"] = any(
+            [visible_north, visible_east, visible_west, visible_south]
+        )
 
         scores = [scores[cardinal] for cardinal in scores if scores[cardinal] > 0]
         self[tree]["visibility_score"] = reduce(operator.mul, scores)
@@ -138,7 +144,9 @@ if __name__ == "__main__":
 
     forest = Forest(data)
 
-    console.print(f"The number of visible trees from each perspective along the perimeter is {forest.num_visible}")
+    console.print(
+        f"The number of visible trees from each perspective along the perimeter is {forest.num_visible}"
+    )
 
     highest_scoring = forest.highest_score
     console.print(
