@@ -13,11 +13,16 @@ class Forest(dict):
         for y in range(len(data)):
             for x in range(len(data[y])):
                 trees[Tree(x, y)] = {"height": data[y][x]}
+
         self.x_min = 0
         self.y_min = 0
         self.x_max = len([tree for tree in data[0]]) - 1
         self.y_max = len(data) - 1
+
         super().__init__(trees)
+
+        for tree in self:
+            self.get_visibility(tree)
 
     def get_visibility(self, tree):
         scores = {"north": 0, "east": 0, "south": 0, "west": 0}
@@ -103,9 +108,14 @@ if __name__ == "__main__":
         data = [[int(height) for height in line.strip()] for line in f.readlines()]
 
     forest = Forest(data)
-    for tree in forest:
-        forest.get_visibility(tree)
 
     num_visible = [tree for tree in forest if forest[tree]["visible"]]
     highest_score = max([forest[tree]["visibility_score"] for tree in forest])
-    print(highest_score)
+    highest_scoring_tree = list(
+        filter(lambda tree: tree["visibility_score"] == highest_score, forest)
+    )
+
+    console.print(
+        f"The number of visible trees from each perspective along the perimeter is {num_visible}"
+    )
+    console.print("The tree")
