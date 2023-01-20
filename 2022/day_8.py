@@ -4,16 +4,15 @@ from functools import reduce
 import operator
 
 console = Console()
+Tree = namedtuple("Tree", "x y")
 
 
 class Forest(dict):
-    Tree = namedtuple("Tree", "x y")
-
     def __init__(self, data: list[list]):
         trees = {}
         for y in range(len(data)):
             for x in range(len(data[y])):
-                trees[self.Tree(x, y)] = {"height": data[y][x]}
+                trees[Tree(x, y)] = {"height": data[y][x]}
         super().__init__(trees)
 
     def get_neighbors(self, tree):
@@ -21,7 +20,7 @@ class Forest(dict):
 
         if tree.y > 0:
             for y in range(1, tree.y + 1):
-                neighbor = self.Tree(tree.x, tree.y - y)
+                neighbor = Tree(tree.x, tree.y - y)
                 if self[neighbor]["height"] < self[tree]["height"]:
                     scores["north"] += 1
                     if neighbor.y == 0:
@@ -37,7 +36,7 @@ class Forest(dict):
 
         if tree.y < 98:
             for y in range(tree.y, 98):
-                neighbor = self.Tree(tree.x, y + 1)
+                neighbor = Tree(tree.x, y + 1)
                 if self[neighbor]["height"] < self[tree]["height"]:
                     scores["south"] += 1
                     if neighbor.y == 98:
@@ -54,7 +53,7 @@ class Forest(dict):
 
         if tree.x < 98:
             for x in range(tree.x, 98):
-                neighbor = self.Tree(x + 1, tree.y)
+                neighbor = Tree(x + 1, tree.y)
                 if self[neighbor]["height"] < self[tree]["height"]:
                     scores["east"] += 1
                     if neighbor.x == 98:
@@ -72,7 +71,7 @@ class Forest(dict):
 
         if tree.x > 0:
             for x in range(1, tree.x + 1):
-                neighbor = self.Tree(tree.x - x, tree.y)
+                neighbor = Tree(tree.x - x, tree.y)
                 if self[neighbor]["height"] < self[tree]["height"]:
                     scores["west"] += 1
                     if neighbor.x == 0:
