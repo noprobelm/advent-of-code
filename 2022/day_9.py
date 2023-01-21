@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from rich.console import Console
-from collections import namedtuple
 from dataclasses import dataclass
-from rich.pretty import pprint
 
 console = Console()
 
@@ -33,19 +31,25 @@ class Rope:
         magnitude = move[1]
 
         for move in range(magnitude):
-            leader_old = Position(self.knot_0.x, self.knot_0.y)
             if axis == 0:
                 self.knot_0 = Position(self.knot_0.x, self.knot_0.y + direction)
             elif axis == 1:
                 self.knot_0 = Position(self.knot_0.x + direction, self.knot_0.y)
 
-            for knot in range(1, self.num_knots):
-                leader = getattr(self, f"knot_{knot - 1}")
-                follower = getattr(self, f"knot_{knot}")
-                if abs(follower.x - leader.x) > 1 or abs(follower.y - leader.y) > 1:
-                    follower = Position(leader_old.x, leader_old.y)
-                    setattr(self, f"knot_{knot}", follower)
-                leader_old = Position(leader.x, leader.y)
+            for _ in range(1, self.num_knots):
+                leader = getattr(self, f"knot_{_ - 1}")
+                follower = getattr(self, f"knot_{_}")
+                if abs(leader.y - follower.y) > 1 or abs(leader.x - follower.x) > 1:
+                    if leader.y > follower.y:
+                        follower = Position(follower.x, follower.y + 1)
+                    elif leader.y < follower.y:
+                        follower = Position(follower.x, follower.y - 1)
+                    if leader.x > follower.x:
+                        follower = Position(follower.x + 1, follower.y)
+                    elif leader.x < follower.x:
+                        follower = Position(follower.x - 1, follower.y)
+
+                setattr(self, f"knot_{_}", follower)
 
             self.tail_history.add(getattr(self, f"knot_{self.num_knots-1}"))
 
