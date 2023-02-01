@@ -68,7 +68,7 @@ class CPU:
 
     @property
     def sprite(self):
-        return list(range(self.x - 1, self.x + 2))
+        return [self.x - 1, self.x, self.x + 1]
 
     def eval(self, instruction: Instruction):
         for cycle in range(len(instruction)):
