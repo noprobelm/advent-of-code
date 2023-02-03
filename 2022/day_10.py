@@ -1,6 +1,8 @@
 from rich import print
 from rich.console import Console, ConsoleOptions
 
+console = Console()
+
 
 class Instruction:
     def __init__(self, x, cycles):
@@ -25,23 +27,15 @@ class CRT:
     resolution = (40, 6)
 
     def __init__(self):
-        self.pixels = ["" for _ in range(self.resolution[0] * self.resolution[1])]
+        self.pixels = []
         self.drawn = []
 
     def draw(self, cycle, sprite):
-        cycle -= 1
-        if cycle % self.resolution[0] == 0 and cycle > 0:
-            print(True)
-            for pixel in self.pixels[:40]:
-                self.drawn.append(pixel)
-            self.pixels = self.pixels[40:]
-        cycle = cycle % self.resolution[0]
-        # print(cycle)
-        # print(sprite)
+        cycle = (cycle - 1) % self.resolution[0]
         if cycle in sprite:
-            self.pixels[cycle] = "#"
+            self.pixels.append("#")
         else:
-            self.pixels[cycle] = "."
+            self.pixels.append(".")
 
     def __getitem__(self, index):
         return self.pixels[index]
@@ -53,7 +47,7 @@ class CRT:
         start = 0
         end = self.resolution[0]
         for row in range(self.resolution[1]):
-            yield "".join(self.drawn[start:end])
+            yield "".join(self.pixels[start:end])
             start += self.resolution[0]
             end += self.resolution[0]
 
