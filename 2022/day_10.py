@@ -24,9 +24,8 @@ class addx(Instruction):
 
 
 class CRT:
-    resolution = (40, 6)
-
-    def __init__(self):
+    def __init__(self, resolution_x, resolution_y):
+        self.resolution = (resolution_x, resolution_y)
         self.pixels = []
         self.drawn = []
 
@@ -57,7 +56,7 @@ class CPU:
     x: int = 1
 
     def __init__(self):
-        self.crt = CRT()
+        self.crt = CRT(40, 6)
         self.history = {}
 
     @property
