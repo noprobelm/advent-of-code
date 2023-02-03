@@ -75,18 +75,18 @@ class CPU:
 
 if __name__ == "__main__":
     with open("day-10-input.txt", "r") as f:
-        commands = [line.strip("\n").split(" ") for line in f.readlines()]
-        for idx, command in enumerate(commands):
-            if command[0] == "noop":
-                commands[idx] = noop()
-            elif command[0] == "addx":
-                commands[idx] = addx(int(command[1]))
+        instructions = [line.strip("\n").split(" ") for line in f.readlines()]
+        for idx, instruction in enumerate(instructions):
+            if instruction[0] == "noop":
+                instructions[idx] = noop()
+            elif instruction[0] == "addx":
+                instructions[idx] = addx(int(instruction[1]))
 
     cpu = CPU()
-    for command in commands:
-        cpu.eval(command)
-    cycles = [i + 1 for i in range(220)][19::40]
+    for instruction in instructions:
+        cpu.eval(instruction)
     answer = 0
+    cycles = [i + 1 for i in range(220)][19::40]
     for cycle in cycles:
         answer += cpu.history[cycle] * cycle
     print(answer)
