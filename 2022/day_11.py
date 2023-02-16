@@ -49,7 +49,7 @@ class KeepAway:
         for monkey in self.monkeys:
             self.reducer *= monkey.test_divisor
 
-    def play(self, rounds):
+    def play(self, rounds, part):
         for _ in range(rounds):
             for num, monkey in enumerate(monkeys):
                 transfer_data = self.monkeys[num].iterate(self.reducer)
@@ -85,13 +85,13 @@ def parse_puzzle_input():
         items = [int(match) for match in re.findall(r"\d+", monkey[0])]
         worry_operation = math.prod if "*" in monkey[1] else sum
         if re.search("\d+", monkey[1]):
-            worry_operand = int(re.search("\d+", monkey[1]).group())
+            worry_operand = int(re.search(r"\d+", monkey[1]).group())
         else:
             worry_operand = None
-        test_divisor = int(re.search("\d+", monkey[2]).group())
+        test_divisor = int(re.search(r"\d+", monkey[2]).group())
         test = {
-            True: int(re.search("\d+", monkey[3]).group()),
-            False: int(re.search("\d+", monkey[4]).group()),
+            True: int(re.search(r"\d+", monkey[3]).group()),
+            False: int(re.search(r"\d+", monkey[4]).group()),
         }
         monkeys.append([items, worry_operation, worry_operand, test, test_divisor])
     return monkeys
@@ -101,5 +101,5 @@ if __name__ == "__main__":
     monkeys = parse_puzzle_input()
     keepaway = KeepAway(monkeys)
     #    keepaway.play(20)
-    keepaway.play(10000)
+    keepaway.play(10000, part=2)
     print(keepaway.puzzle_2_answer)
