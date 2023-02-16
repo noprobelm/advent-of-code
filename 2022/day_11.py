@@ -75,7 +75,7 @@ class KeepAway:
         return inspect_count_reversed[0] * inspect_count_reversed[1]
 
 
-def parse_data():
+def parse_puzzle_input():
     monkeys = []
     with open("day-11-input.txt", "r") as f:
         data = f.read()
@@ -98,7 +98,7 @@ def parse_data():
 
 
 if __name__ == "__main__":
-    monkeys = parse_data()
+    monkeys = parse_puzzle_input()
     keepaway = KeepAway(monkeys)
     #    keepaway.play(20)
     keepaway.play(10000)
