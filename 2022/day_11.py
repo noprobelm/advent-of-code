@@ -17,7 +17,7 @@ class Monkey:
         self.test_divisor = test_divisor
         self.num_inspected = 0
 
-    def inspect(self, cycle_length, part=1):
+    def inspect(self, part=1, cycle_length=None):
         transfer_data = {monkey: [] for monkey in self.test_dict.values()}
         for item in self.items:
             worry_operand = self.worry_operand or item
@@ -47,8 +47,10 @@ class KeepAway:
 
     def play(self, rounds, part):
         for _ in range(rounds):
-            for num, origin_monkey in enumerate(monkeys):
-                transfer_data = self.monkeys[num].inspect(self.cycle_length)
+            for num in range(len(self.monkeys)):
+                transfer_data = self.monkeys[num].inspect(
+                    part=part, cycle_length=self.cycle_length
+                )
                 for target_monkey in transfer_data:
                     for item in transfer_data[target_monkey]:
                         self.monkeys[target_monkey].items.append(item)
@@ -88,7 +90,9 @@ if __name__ == "__main__":
     monkeys = parse_puzzle_input()
     keepaway = KeepAway(monkeys)
     keepaway.play(20, part=1)
+    print(f"Puzzle 1 Answer: {keepaway.puzzle_answer}")
 
-    # keepaway = KeepAway(monkeys)
-    # keepaway.play(10000, part=2
-    print(keepaway.puzzle_answer)
+    monkeys = parse_puzzle_input()
+    keepaway = KeepAway(monkeys)
+    keepaway.play(10000, part=2)
+    print(f"Puzzle 2 Answer: {keepaway.puzzle_answer}")
