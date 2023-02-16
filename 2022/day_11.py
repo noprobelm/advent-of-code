@@ -23,7 +23,7 @@ class Monkey:
             worry_operand = self.worry_operand or item
             item = self.worry_operation([item, worry_operand])
             if part == 1:
-                item /= 3
+                item //= 3
             else:
                 while item > cycle_length:
                     item %= cycle_length
