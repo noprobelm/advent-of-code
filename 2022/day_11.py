@@ -1,6 +1,6 @@
 import re
 import math
-from rich.console import Console, ConsoleOptions
+from rich.console import Console
 from rich import print
 
 console = Console()
