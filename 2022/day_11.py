@@ -2,7 +2,6 @@ import re
 import math
 from rich.console import Console, ConsoleOptions
 from rich import print
-import inspect
 
 console = Console()
 
