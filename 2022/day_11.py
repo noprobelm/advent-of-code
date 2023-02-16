@@ -29,11 +29,11 @@ class Monkey:
         else:
             return self.test[False]
 
-    def iterate(self, reducer):
+    def iterate(self, cycle_length):
         transfer_data = []
         for num, item in enumerate(self.items):
-            while item > reducer:
-                item %= reducer
+            while item > cycle_length:
+                item %= cycle_length
             item = self.inspect(item)
             self.items[num] = item
             target = self.get_target(item)
@@ -45,14 +45,14 @@ class Monkey:
 class KeepAway:
     def __init__(self, monkeys):
         self.monkeys = [Monkey(*monkey) for monkey in monkeys]
-        self.reducer = 1
+        self.cycle_length = 1
         for monkey in self.monkeys:
-            self.reducer *= monkey.test_divisor
+            self.cycle_length *= monkey.test_divisor
 
     def play(self, rounds, part):
         for _ in range(rounds):
             for num, monkey in enumerate(monkeys):
-                transfer_data = self.monkeys[num].iterate(self.reducer)
+                transfer_data = self.monkeys[num].iterate(self.cycle_length)
                 for data in transfer_data:
                     self.monkeys[data[0]].items.append(data[1])
             print(_)
