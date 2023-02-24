@@ -28,82 +28,19 @@ class Maze:
             self.add_neighbors(node)
 
     def add_neighbors(self, node: Node) -> None:
-        if node.x > 0:
-            neighbor = Node(node.x - 1, node.y)
-            self.paths.add_node(
-                neighbor, altitude=ord(self.mapper[neighbor.y][neighbor.x])
-            )
+        evaluations = [
+            (Node(node.x - 1, node.y), node.x > 0),
+            (Node(node.x + 1, node.y), node.x < len(self.mapper[0]) - 1),
+            (Node(node.x, node.y - 1), node.y > 0),
+            (Node(node.x, node.y + 1), node.y < len(self.mapper) - 1),
+        ]
+        for evaluation in evaluations:
+            neighbor = evaluation[0]
             if (
-                self.paths.nodes[node]["altitude"]
-                >= self.paths.nodes[neighbor]["altitude"]
-            ):
-                self.paths.add_edge(node, neighbor)
-
-            elif (
-                self.paths.nodes[neighbor]["altitude"]
-                - self.paths.nodes[node]["altitude"]
-                == 1
-            ):
-                self.paths.add_edge(node, neighbor)
-
-        if node.x < len(self.mapper[0]) - 1:
-            neighbor = Node(node.x + 1, node.y)
-            self.paths.add_node(
-                neighbor, altitude=ord(self.mapper[neighbor.y][neighbor.x])
-            )
-            if (
-                self.paths.nodes[node]["altitude"]
-                >= self.paths.nodes[neighbor]["altitude"]
-            ):
-                self.paths.add_edge(node, neighbor)
-                if node.x == 76 and node.y == 20:
-                    print(self.paths.nodes[node])
-                    print(self.paths.nodes[neighbor])
-                    print(self.mapper[neighbor.y][neighbor.x])
-
-            elif (
-                self.paths.nodes[neighbor]["altitude"]
-                - self.paths.nodes[node]["altitude"]
-                == 1
-            ):
-
-                self.paths.add_edge(node, neighbor)
-                if node.x == 76 and node.y == 20:
-                    print(self.paths.nodes[node])
-                    print(self.paths.nodes[neighbor])
-        if node.y > 0:
-            neighbor = Node(node.x, node.y - 1)
-            self.paths.add_node(
-                neighbor, altitude=ord(self.mapper[neighbor.y][neighbor.x])
-            )
-            if (
-                self.paths.nodes[node]["altitude"]
-                >= self.paths.nodes[neighbor]["altitude"]
-            ):
-                self.paths.add_edge(node, neighbor)
-
-            elif (
-                self.paths.nodes[neighbor]["altitude"]
-                - self.paths.nodes[node]["altitude"]
-                == 1
-            ):
-                self.paths.add_edge(node, neighbor)
-
-        if node.y < len(self.mapper) - 1:
-            neighbor = Node(node.x, node.y + 1)
-            self.paths.add_node(
-                neighbor, altitude=ord(self.mapper[neighbor.y][neighbor.x])
-            )
-            if (
-                self.paths.nodes[node]["altitude"]
-                >= self.paths.nodes[neighbor]["altitude"]
-            ):
-                self.paths.add_edge(node, neighbor)
-
-            elif (
-                self.paths.nodes[neighbor]["altitude"]
-                - self.paths.nodes[node]["altitude"]
-                == 1
+                evaluation[1]
+                and self.paths.nodes[node]["altitude"]
+                - self.paths.nodes[neighbor]["altitude"]
+                >= -1
             ):
                 self.paths.add_edge(node, neighbor)
 
