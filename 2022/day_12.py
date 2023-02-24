@@ -23,8 +23,7 @@ class Maze:
                     self.paths.add_node(Node(x=x, y=y), altitude=ord("z"), end=True)
                     self.mapper[y][x] = "z"
                 else:
-                    node = Node(x=x, y=y)
-                    self.paths.add_node(node, altitude=ord(self.mapper[y][x]))
+                    self.paths.add_node(Node(x=x, y=y), altitude=ord(self.mapper[y][x]))
 
         for node in self.paths.nodes:
             self.add_neighbors(node)
