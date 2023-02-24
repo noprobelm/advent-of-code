@@ -48,11 +48,10 @@ class Maze:
     def shortest(self) -> int:
         return len(nx.shortest_path(self.paths, self.start, self.end)) - 1
 
-    @property
-    def shortest_from_a(self) -> int:
+    def shortest_from_altitude(self, altitude: str):
         shortest = []
         for node in self.paths.nodes:
-            if self.paths.nodes[node]["altitude"] == ord("a"):
+            if self.paths.nodes[node]["altitude"] == ord(altitude):
                 try:
                     shortest.append(len(nx.shortest_path(self.paths, node, self.end)))
                 except nx.NetworkXNoPath:
@@ -77,4 +76,4 @@ def read(filename: str) -> list[list[str]]:
 if __name__ == "__main__":
     maze = Maze(read("day-12-input.txt"))
     print(maze.shortest)
-    print(maze.shortest_from_a)
+    print(maze.shortest_from_altitude("a"))
