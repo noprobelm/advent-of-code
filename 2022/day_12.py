@@ -7,8 +7,6 @@ from dataclasses import dataclass
 from rich import print
 from rich.console import Console
 
-Coordinate = namedtuple("Position", ["x", "y"])
-
 
 @dataclass(frozen=True)
 class Node:
