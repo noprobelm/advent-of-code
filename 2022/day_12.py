@@ -48,7 +48,7 @@ class Maze:
     def shortest(self) -> int:
         return len(nx.shortest_path(self.paths, self.start, self.end)) - 1
 
-    def shortest_from_altitude(self, altitude: str):
+    def shortest_from_altitude(self, altitude: str) -> int:
         shortest = []
         for node in self.paths.nodes:
             if self.paths.nodes[node]["altitude"] == ord(altitude):
