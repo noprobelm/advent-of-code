@@ -105,10 +105,6 @@ class Maze:
         return min(shortest) - 1
 
     @property
-    def state(self):
-        return [self.G.nodes[u] for u, v in self.G.edges]
-
-    @property
     def start(self):
         return list(nx.get_node_attributes(self.G, "start").keys())[0]
 
