@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-
-import re
 import networkx as nx
-from collections import namedtuple
 from dataclasses import dataclass
 from rich import print
 from rich.console import Console
