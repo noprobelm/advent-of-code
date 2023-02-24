@@ -17,12 +17,10 @@ class Maze:
         for y, row in enumerate(self.mapper):
             for x, node in enumerate(row):
                 if node == "S":
-                    node = Node(x=x, y=y)
-                    self.paths.add_node(node, altitude=ord("a"), start=True)
+                    self.paths.add_node(Node(x=x, y=y), altitude=ord("a"), start=True)
                     self.mapper[y][x] = "a"
                 elif node == "E":
-                    node = Node(x=x, y=y)
-                    self.paths.add_node(node, altitude=ord("z"), end=True)
+                    self.paths.add_node(Node(x=x, y=y), altitude=ord("z"), end=True)
                     self.mapper[y][x] = "z"
                 else:
                     node = Node(x=x, y=y)
