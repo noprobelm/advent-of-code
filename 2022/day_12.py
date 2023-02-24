@@ -28,12 +28,12 @@ class Maze:
             self.add_neighbors(node)
 
     def add_neighbors(self, node: Node) -> None:
-        evaluations = [
+        evaluations = (
             (Node(node.x - 1, node.y), node.x > 0),
             (Node(node.x + 1, node.y), node.x < len(self.mapper[0]) - 1),
             (Node(node.x, node.y - 1), node.y > 0),
             (Node(node.x, node.y + 1), node.y < len(self.mapper) - 1),
-        ]
+        )
         for evaluation in evaluations:
             neighbor = evaluation[0]
             if (
