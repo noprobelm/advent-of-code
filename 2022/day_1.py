@@ -1,19 +1,14 @@
-with open("day-1-input.txt", "r") as f:
-    calories = []
-    elf = []
-    for line in f.readlines():
-        line = line.replace("\n", "")
-        if line:
-            elf.append(int(line))
-        else:
-            calories.append(elf)
-            elf = []
+import re
 
-calories = list(sorted([sum(foods) for foods in calories], reverse=True))
+with open("day-1-input.txt", "r") as f:
+    elves = [re.split("\n", elf) for elf in re.split(r"\n\n", f.read())][:-1]
+    for elf in elves:
+        for i, meal in enumerate(elf):
+            elf[i] = int(meal)
+
+calories = list(sorted([sum(meals) for meals in elves], reverse=True))
 largest = calories[0]
 top_three_cumulative = sum(calories[:3])
 
-print(f"The elf with the most calories is carrying {largest} calories.")
-print(
-    f"The cumulative sum of the calories carried by the top three elves with the most calories is {top_three_cumulative}"
-)
+print(f"Puzzle 1: {largest}")
+print(f"Puzzle 2: {top_three_cumulative}")
