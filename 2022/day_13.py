@@ -82,7 +82,7 @@ def is_ordered(left, right):
 
 
 def bubble_sort(packets):
-    for i, packet in enumerate(packets):
+    for i in range(len(packets)):
         already_sorted = True
         for j in range(len(packets) - i - 1):
             if is_ordered(packets[j], packets[j + 1]) is False:
