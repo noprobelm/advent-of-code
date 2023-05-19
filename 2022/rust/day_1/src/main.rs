@@ -62,8 +62,8 @@ fn rucksacks_from_lines(lines: Vec<String>) -> Vec<Rucksack> {
     rucksacks
 }
 
-fn find_largest(calories: &Vec<u32>) -> &u32 {
-    calories.iter().max().unwrap()
+fn find_largest(calories: &Vec<u32>) -> u32 {
+    *calories.iter().max().unwrap()
 }
 
 fn combine_three_largest(calories: &Vec<u32>) -> u32 {
