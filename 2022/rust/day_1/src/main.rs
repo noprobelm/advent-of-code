@@ -68,6 +68,6 @@ fn find_largest(calories: &Vec<u32>) -> u32 {
 
 fn combine_three_largest(calories: &Vec<u32>) -> u32 {
     let mut sorted = calories.to_vec();
-    sorted.sort_unstable_by(|a, b| b.cmp(a));
+    sorted.sort_by(|a, b| b.cmp(a));
     sorted[0..3].iter().sum()
 }
