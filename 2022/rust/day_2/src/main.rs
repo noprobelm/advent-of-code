@@ -22,8 +22,7 @@ fn main() {
             _ => panic!("Invalid move for player"),
         };
 
-        score = play(player, opponent);
-        println!("{score}")
+        score += play(player, opponent);
     }
     println!("{score}")
 }
@@ -49,20 +48,17 @@ fn play(player: Move, opponent: Move) -> u32 {
 
     match (player, opponent) {
         (Move::Rock, Move::Rock)
-            | (Move::Paper, Move::Paper)
-            | (Move::Scissors, Move::Scissors) => player_points += 3,
+        | (Move::Paper, Move::Paper)
+        | (Move::Scissors, Move::Scissors) => player_points += 3,
 
-        (Move::Paper, Move::)
+        (Move::Paper, Move::Rock)
+        | (Move::Rock, Move::Scissors)
+        | (Move::Scissors, Move::Paper) => player_points += 6,
+        (Move::Paper, Move::Scissors)
+        | (Move::Rock, Move::Paper)
+        | (Move::Scissors, Move::Rock) => (),
     }
 
-
-    if player_points > opponent_points {
-        player_points += 6
-    } else if player_points == opponent_points {
-        player_points += 3
-    } else {
-        player_points += 0
-    }
     player_points
 }
 
