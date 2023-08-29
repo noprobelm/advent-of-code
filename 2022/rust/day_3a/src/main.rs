@@ -10,9 +10,17 @@ fn main() {
     let mut priorities: Vec<u32> = Vec::new();
 
     for line in lines {
-        let rucksack = Rucksack::new(line);
-        let common = rucksack.find_common();
-        priorities.push(*priority_mapper.get(&common).unwrap());
+        let len = line.len();
+        let mid = len / 2;
+        let first_compartment: String = line.chars().take(mid).collect();
+        let second_compartment: String = line.chars().skip(mid).collect();
+
+        let first_set: HashSet<char> = HashSet::from_iter(first_compartment.chars());
+        let second_set: HashSet<char> = HashSet::from_iter(second_compartment.chars());
+        let duplicate: Vec<char> = first_set.intersection(&second_set).cloned().collect();
+
+        // Our puzzle input guarantees we will only ever have 1 duplicate between the 1st and 2nd compartments
+        priorities.push(*priority_mapper.get(&duplicate[0]).unwrap());
     }
 
     let answer: u32 = priorities.iter().sum();
@@ -30,38 +38,6 @@ fn get_priority_mapper() -> HashMap<char, u32> {
         letters.into_iter().zip(priorities.into_iter()).collect();
 
     score_mapper
-}
-
-struct Rucksack {
-    contents: String,
-}
-
-impl Rucksack {
-    fn new(contents: String) -> Self {
-        Rucksack { contents }
-    }
-
-    fn first_compartment(&self) -> String {
-        let len = self.contents.len();
-        let mid = len / 2;
-        self.contents.chars().take(mid).collect()
-    }
-
-    fn second_compartment(&self) -> String {
-        let len = self.contents.len();
-        let mid = len / 2;
-        self.contents.chars().skip(mid).collect()
-    }
-
-    fn find_common(&self) -> char {
-        let first: HashSet<char> = HashSet::from_iter(self.first_compartment().chars());
-        let second: HashSet<char> = HashSet::from_iter(self.second_compartment().chars());
-
-        let duplicate: Vec<char> = first.intersection(&second).cloned().collect();
-
-        // Our puzzle input guarantees no rucksack will contain more than 1 dup value
-        duplicate[0]
-    }
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
