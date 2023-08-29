@@ -4,27 +4,49 @@ use std::path::Path;
 
 fn main() {
     let lines: Vec<String> = lines_from_file("input.txt");
-    let mut score = 0;
+    let mut score: u32 = 0;
     for line in lines {
         let split: Vec<&str> = line.split_whitespace().collect();
 
-        let opponent = match split[0] {
+        let opponent_move = match split[0] {
             "A" => Move::Rock,
             "B" => Move::Paper,
             "C" => Move::Scissors,
-            _ => panic!("Invalid move for opponent"),
+            _ => panic!("Invalid move"),
         };
 
-        let player = match split[1] {
+        let outcome = match split[1] {
             "X" => Outcome::Lose,
             "Y" => Outcome::Draw,
             "Z" => Outcome::Win,
-            _ => panic!("Invalid move for player"),
+            _ => panic!("Invalid outcome"),
         };
 
-        score += play(player, opponent);
+        let player_move = match outcome {
+            Outcome::Win => opponent_move.beaten_by(),
+            Outcome::Lose => opponent_move.beats(),
+            Outcome::Draw => opponent_move,
+        };
+
+        score += player_move.score() + outcome.score();
     }
     println!("{score}")
+}
+
+enum Outcome {
+    Lose,
+    Draw,
+    Win,
+}
+
+impl Outcome {
+    const fn score(&self) -> u32 {
+        match self {
+            Self::Lose => 0,
+            Self::Draw => 3,
+            Self::Win => 6,
+        }
+    }
 }
 
 enum Move {
@@ -33,26 +55,28 @@ enum Move {
     Scissors,
 }
 
-enum Outcome {
-    Win,
-    Draw,
-    Lose,
-}
-
-fn play(player: Outcome, opponent: Move) -> u32 {
-    let score = match (player, opponent) {
-        (Outcome::Win, Move::Rock) => 8,
-        (Outcome::Draw, Move::Rock) => 4,
-        (Outcome::Lose, Move::Rock) => 3,
-        (Outcome::Win, Move::Paper) => 9,
-        (Outcome::Draw, Move::Paper) => 5,
-        (Outcome::Lose, Move::Paper) => 1,
-        (Outcome::Win, Move::Scissors) => 7,
-        (Outcome::Draw, Move::Scissors) => 6,
-        (Outcome::Lose, Move::Scissors) => 2,
-    };
-
-    score
+impl Move {
+    const fn beaten_by(&self) -> Self {
+        match self {
+            Self::Rock => Self::Paper,
+            Self::Paper => Self::Scissors,
+            Self::Scissors => Self::Rock,
+        }
+    }
+    const fn beats(&self) -> Self {
+        match self {
+            Self::Rock => Self::Scissors,
+            Self::Paper => Self::Rock,
+            Self::Scissors => Self::Paper,
+        }
+    }
+    const fn score(&self) -> u32 {
+        match self {
+            Self::Rock => 1,
+            Self::Paper => 2,
+            Self::Scissors => 3,
+        }
+    }
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
