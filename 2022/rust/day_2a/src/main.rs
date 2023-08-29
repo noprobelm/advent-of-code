@@ -22,38 +22,64 @@ fn main() {
             _ => panic!("Invalid move for player"),
         };
 
-        score += play(player, opponent);
+        let outcome = match player {
+            _ if player.beats() == opponent => Outcome::Win,
+            _ if player.beaten_by() == opponent => Outcome::Lose,
+            _ => Outcome::Draw,
+        };
+
+        score += outcome.score() + player.score();
     }
     println!("{score}")
 }
 
+enum Outcome {
+    Lose,
+    Draw,
+    Win,
+}
+
+impl Outcome {
+    const fn score(&self) -> u32 {
+        match self {
+            Self::Lose => 0,
+            Self::Draw => 3,
+            Self::Win => 6,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq)]
 enum Move {
     Rock,
     Paper,
     Scissors,
 }
 
-fn play(player: Move, opponent: Move) -> u32 {
-    let mut player_points = match player {
-        Move::Rock => 1,
-        Move::Paper => 2,
-        Move::Scissors => 3,
-    };
-
-    match (player, opponent) {
-        (Move::Rock, Move::Rock)
-        | (Move::Paper, Move::Paper)
-        | (Move::Scissors, Move::Scissors) => player_points += 3,
-
-        (Move::Paper, Move::Rock)
-        | (Move::Rock, Move::Scissors)
-        | (Move::Scissors, Move::Paper) => player_points += 6,
-        (Move::Paper, Move::Scissors)
-        | (Move::Rock, Move::Paper)
-        | (Move::Scissors, Move::Rock) => (),
+impl Move {
+    const fn beaten_by(&self) -> Self {
+        match self {
+            Self::Rock => Self::Paper,
+            Self::Paper => Self::Scissors,
+            Self::Scissors => Self::Rock,
+        }
     }
 
-    player_points
+    const fn beats(&self) -> Self {
+        match self {
+            Self::Rock => Self::Scissors,
+            Self::Paper => Self::Rock,
+            Self::Scissors => Self::Paper,
+        }
+    }
+
+    const fn score(&self) -> u32 {
+        match self {
+            Self::Rock => 1,
+            Self::Paper => 2,
+            Self::Scissors => 3,
+        }
+    }
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
