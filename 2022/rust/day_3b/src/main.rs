@@ -11,11 +11,11 @@ fn main() {
     let mut priorities: Vec<u32> = Vec::new();
 
     for (a, b, c) in lines.into_iter().tuples() {
-        let set1: HashSet<char> = HashSet::from_iter(a.chars());
-        let set2: HashSet<char> = HashSet::from_iter(b.chars());
-        let set3: HashSet<char> = HashSet::from_iter(c.chars());
-        let mut intersection: HashSet<char> = set1.intersection(&set2).cloned().collect();
-        let intersection: Vec<char> = intersection.intersection(&set3).cloned().collect();
+        let set_1: HashSet<char> = HashSet::from_iter(a.chars());
+        let set_2: HashSet<char> = HashSet::from_iter(b.chars());
+        let set_3: HashSet<char> = HashSet::from_iter(c.chars());
+        let intersection: HashSet<char> = set_1.intersection(&set_2).cloned().collect();
+        let intersection: Vec<char> = intersection.intersection(&set_3).cloned().collect();
 
         // Our puzzle input guarantees we will only ever have 1 duplicate between each set of 3
         priorities.push(*priority_mapper.get(&intersection[0]).unwrap());
