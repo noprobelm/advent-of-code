@@ -12,15 +12,15 @@ fn main() {
     for line in lines {
         let len = line.len();
         let mid = len / 2;
-        let first_compartment: String = line.chars().take(mid).collect();
-        let second_compartment: String = line.chars().skip(mid).collect();
+        let compartment_1: String = line.chars().take(mid).collect();
+        let compartment_2: String = line.chars().skip(mid).collect();
 
-        let first_set: HashSet<char> = HashSet::from_iter(first_compartment.chars());
-        let second_set: HashSet<char> = HashSet::from_iter(second_compartment.chars());
-        let duplicate: Vec<char> = first_set.intersection(&second_set).cloned().collect();
+        let set_1: HashSet<char> = HashSet::from_iter(compartment_1.chars());
+        let set_2: HashSet<char> = HashSet::from_iter(compartment_2.chars());
+        let intersection: Vec<char> = set_1.intersection(&set_2).cloned().collect();
 
         // Our puzzle input guarantees we will only ever have 1 duplicate between the 1st and 2nd compartments
-        priorities.push(*priority_mapper.get(&duplicate[0]).unwrap());
+        priorities.push(*priority_mapper.get(&intersection[0]).unwrap());
     }
 
     let answer: u32 = priorities.iter().sum();
