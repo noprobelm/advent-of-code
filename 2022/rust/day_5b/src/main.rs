@@ -1,4 +1,3 @@
-use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::path::Path;
@@ -10,25 +9,28 @@ fn main() {
     let (mut crates, instructions) = get_puzzle_parts(lines);
 
     // Each step is a tuple of usizes equal to "num to move", "from", and "to"
-    let mut queue: VecDeque<char> = VecDeque::new();
+    let mut queue: Vec<char> = Vec::new();
     for step in instructions {
+        // First collect the crates from the stack
         for _i in 0..step.0 {
-            queue.push_front(crates[step.1 - 1].pop_front().unwrap());
+            queue.push(crates[step.1 - 1].pop().unwrap());
         }
+
+        // Now dump them on the new stack
         for _i in 0..step.0 {
-            crates[step.2 - 1].push_front(queue.pop_front().unwrap());
+            crates[step.2 - 1].push(queue.pop().unwrap());
         }
     }
 
     let mut answer: String = String::new();
     crates
         .iter()
-        .for_each(|x| answer.push(*x.front().expect("Empty stack!")));
+        .for_each(|x| answer.push(*x.last().expect("Empty stack!")));
 
     println!("{answer}")
 }
 
-fn get_puzzle_parts(lines: Vec<String>) -> (Vec<VecDeque<char>>, Vec<(usize, usize, usize)>) {
+fn get_puzzle_parts(lines: Vec<String>) -> (Vec<Vec<char>>, Vec<(usize, usize, usize)>) {
     let separator = lines
         .iter()
         .position(|x| x.is_empty())
@@ -43,17 +45,17 @@ fn get_puzzle_parts(lines: Vec<String>) -> (Vec<VecDeque<char>>, Vec<(usize, usi
     (crates, instructions)
 }
 
-fn parse_crates(mut crates: Vec<String>) -> Vec<VecDeque<char>> {
+fn parse_crates(mut crates: Vec<String>) -> Vec<Vec<char>> {
     // Remove the index, we don't need it.
     crates.pop();
 
-    let mut rows: Vec<VecDeque<char>> = Vec::new();
+    let mut rows: Vec<Vec<char>> = Vec::new();
 
     // Pad each row so we have a uniform 2d structure that can be transposed
     let max_width = crates.last().expect("Empty vec!").len();
     for row in crates {
         let padded_right = format!("{:max_width$}", row);
-        let row: VecDeque<char> = padded_right
+        let row: Vec<char> = padded_right
             .chars()
             .skip(1)
             .step_by(2)
@@ -66,17 +68,18 @@ fn parse_crates(mut crates: Vec<String>) -> Vec<VecDeque<char>> {
     }
 
     // Transpose our data to accurately represent the grid of crates
-    let mut rows: Vec<VecDeque<char>> = transpose(rows);
+    let mut rows: Vec<Vec<char>> = transpose(rows);
 
     // Finally, remove erroneous whitespace
     for row in &mut rows {
-        row.retain(|x| !x.is_whitespace())
+        row.retain(|x| !x.is_whitespace());
+        row.reverse();
     }
 
     rows
 }
 
-fn transpose<T>(v: Vec<VecDeque<T>>) -> Vec<VecDeque<T>> {
+fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
     let len = v[0].len();
     let mut iters: Vec<_> = v.into_iter().map(|n| n.into_iter()).collect();
     (0..len)
@@ -84,7 +87,7 @@ fn transpose<T>(v: Vec<VecDeque<T>>) -> Vec<VecDeque<T>> {
             iters
                 .iter_mut()
                 .map(|n| n.next().unwrap())
-                .collect::<VecDeque<T>>()
+                .collect::<Vec<T>>()
         })
         .collect()
 }
