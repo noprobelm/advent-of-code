@@ -66,12 +66,10 @@ fn parse_crates(mut crates: Vec<String>) -> Vec<Vec<char>> {
 
     // Finally, remove erroneous whitespace
     for row in &mut rows {
-        row.retain(|x| !x.is_whitespace())
-    }
-
-    for row in &mut rows {
+        row.retain(|x| !x.is_whitespace());
         row.reverse();
     }
+
     rows
 }
 
