@@ -12,11 +12,10 @@ fn main() {
     // Each step is a tuple of usizes equal to "num to move", "from", and "to"
     let mut queue: VecDeque<char> = VecDeque::new();
     for step in instructions {
-        println!("{:?}", step);
         for _i in 0..step.0 {
             queue.push_front(crates[step.1 - 1].pop_front().unwrap());
         }
-        for _i in 0..queue.len() {
+        for _i in 0..step.0 {
             crates[step.2 - 1].push_front(queue.pop_front().unwrap());
         }
     }
