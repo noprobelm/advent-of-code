@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
@@ -12,7 +11,7 @@ fn main() {
 
     // Each step is a tuple of usizes equal to "num to move", "from", and "to"
     for step in instructions {
-        for i in 0..step.0 {
+        for _i in 0..step.0 {
             let item: char = crates[step.1 - 1].pop_front().unwrap();
             crates[step.2 - 1].push_front(item);
         }
