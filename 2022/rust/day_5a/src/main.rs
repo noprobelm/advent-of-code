@@ -7,13 +7,14 @@ use std::path::Path;
 fn main() {
     let lines = lines_from_file("input.txt");
 
-    // Segments the stack of crates from the instructions
+    // Parse out the stack of crates and the moving instructions
     let (mut crates, instructions) = get_puzzle_parts(lines);
 
+    // Each step is a tuple of usizes equal to "num to move", "from", and "to"
     for step in instructions {
-        for i in 0..step[0] {
-            let item: char = crates[step[1] - 1].pop_front().unwrap();
-            crates[step[2] - 1].push_front(item);
+        for i in 0..step.0 {
+            let item: char = crates[step.1 - 1].pop_front().unwrap();
+            crates[step.2 - 1].push_front(item);
         }
     }
 
@@ -25,11 +26,11 @@ fn main() {
     println!("{answer}")
 }
 
-fn get_puzzle_parts(lines: Vec<String>) -> (Vec<VecDeque<char>>, Vec<Vec<usize>>) {
+fn get_puzzle_parts(lines: Vec<String>) -> (Vec<VecDeque<char>>, Vec<(usize, usize, usize)>) {
     let separator = lines
         .iter()
         .position(|x| x.is_empty())
-        .expect("No empty line found!");
+        .expect("No empty line separating the puzzle input was found!");
 
     let crates_unparsed = &lines[..separator];
     let instructions_unparsed = &lines[separator + 1..];
@@ -46,7 +47,7 @@ fn parse_crates(mut crates: Vec<String>) -> Vec<VecDeque<char>> {
 
     let mut rows: Vec<VecDeque<char>> = Vec::new();
 
-    // Pad each row so we have a uniform 2d structure
+    // Pad each row so we have a uniform 2d structure that can be transposed
     let max_width = crates.last().expect("Empty vec!").len();
     for row in crates {
         let padded_right = format!("{:max_width$}", row);
@@ -65,7 +66,7 @@ fn parse_crates(mut crates: Vec<String>) -> Vec<VecDeque<char>> {
     // Transpose our data to accurately represent the grid of crates
     let mut rows: Vec<VecDeque<char>> = transpose(rows);
 
-    // Remove erroneous whitespace
+    // Finally, remove erroneous whitespace
     for row in &mut rows {
         row.retain(|x| !x.is_whitespace())
     }
@@ -86,15 +87,15 @@ fn transpose<T>(v: Vec<VecDeque<T>>) -> Vec<VecDeque<T>> {
         .collect()
 }
 
-fn parse_instructions(instructions: Vec<String>) -> Vec<Vec<usize>> {
-    let mut cleaned: Vec<Vec<usize>> = Vec::new();
+fn parse_instructions(instructions: Vec<String>) -> Vec<(usize, usize, usize)> {
+    let mut cleaned: Vec<(usize, usize, usize)> = Vec::new();
     for step in instructions {
         let parsed: Vec<usize> = step
             .split_whitespace()
             .filter_map(|x| x.parse::<usize>().ok())
             .collect();
 
-        cleaned.push(parsed)
+        cleaned.push((parsed[0], parsed[1], parsed[2]))
     }
 
     cleaned
