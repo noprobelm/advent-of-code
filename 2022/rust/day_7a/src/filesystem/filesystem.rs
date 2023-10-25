@@ -1,59 +1,146 @@
+use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::visit::{Bfs, DfsPostOrder};
+use petgraph::Direction;
 use std::collections::HashMap;
-use std::fmt::Debug;
-use std::hash::Hash;
+use std::ops::Index;
 
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone)]
+pub enum NodeType {
+    File,
+    Directory,
+}
+
+#[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub struct Node {
-    pub name: String,
+    name: String,
+    ntype: NodeType,
+}
+
+impl Index<NodeIndex> for FileSystem {
+    type Output = Node;
+
+    fn index(&self, index: NodeIndex) -> &Self::Output {
+        &self.graph[index]
+    }
 }
 
 impl Node {
-    pub fn new(name: String) -> Self {
-        Node { name: name }
-    }
-
-    pub fn root() -> Self {
+    pub fn new(name: &str, ntype: NodeType) -> Self {
         Node {
-            name: "".to_string(),
+            name: name.to_string(),
+            ntype: ntype,
         }
     }
 
-    pub fn join(&self, target: Node) -> Self {
-        let mut parts = self.parts();
-        parts.push(target.name.as_str());
-        Node::new(parts.join("/"))
+    pub fn join(&self, target: &str, ntype: NodeType) -> Self {
+        let mut split: Vec<&str> = self.name.split("/").collect();
+        split.push(target);
+        let joined = split.join("/");
+        Node::new(&joined, ntype)
     }
 
     pub fn parent(&self) -> Self {
-        let mut parts = self.parts();
-        parts.pop();
-        let parent = parts.join("/");
-        Node::new(parent)
+        let mut split: Vec<&str> = self.name.split("/").collect();
+        split.pop();
+        let joined = split.join("/");
+        Node::new(&joined, NodeType::Directory)
     }
 
-    pub fn parts(&self) -> Vec<&str> {
-        self.name.split("/").collect::<Vec<&str>>()
+    pub fn root() -> Self {
+        Node::new("", NodeType::Directory)
     }
 }
 
-#[derive(Debug)]
 pub struct FileSystem {
-    alist: HashMap<Node, Vec<Node>>,
+    pub graph: DiGraph<Node, u64>,
+    pub root: NodeIndex,
+    pub working: NodeIndex,
 }
 
 impl FileSystem {
     pub fn new() -> Self {
-        let mut alist: HashMap<Node, Vec<Node>> = HashMap::new();
-        let mut v: Vec<Node> = Vec::new();
-        alist.insert(Node::root(), v);
-        FileSystem { alist: alist }
+        let mut g: DiGraph<Node, u64> = DiGraph::new();
+        let root: NodeIndex = g.add_node(Node::root());
+        FileSystem {
+            graph: g,
+            root: root,
+            working: root,
+        }
     }
 
-    pub fn insert(&mut self, parent: Node, target: Node) {
-        let mut v: Vec<Node> = Vec::new();
-        self.alist.insert(target, v);
-        self.alist
-            .entry(parent)
-            .and_modify(|v| v.push(target.clone()));
+    pub fn get_index(&self, node: Node) -> Option<NodeIndex> {
+        for node_idx in self.graph.node_indices() {
+            if self.graph[node_idx] == node {
+                return Some(node_idx);
+            }
+        }
+        None
+    }
+
+    pub fn mkdir(&mut self, path_nx: NodeIndex, name: &str) {
+        let node = self[path_nx].join(name, NodeType::Directory);
+        let nx = self.graph.add_node(node);
+        self.graph.add_edge(path_nx, nx, 0);
+    }
+
+    pub fn fallocate(&mut self, path_nx: NodeIndex, name: &str, size: u64) {
+        let node = self[path_nx].join(name, NodeType::File);
+        let nx = self.graph.add_node(node);
+        self.graph.add_edge(path_nx, nx, size);
+    }
+
+    pub fn cd(&mut self, name: &str) {
+        let path = match name {
+            ".." => self.get_index(self[self.working].parent()).unwrap(),
+            "/" => self.root,
+            _ => self
+                .get_index(self[self.working].join(name, NodeType::Directory))
+                .unwrap(),
+        };
+        self.working = path;
+    }
+
+    fn calculate_weights(&mut self) {
+        let mut dfs_postorder = DfsPostOrder::new(&self.graph, self.root);
+        while let Some(nx) = dfs_postorder.next(&self.graph) {
+            let mut neighbors = self
+                .graph
+                .neighbors_directed(nx, Direction::Outgoing)
+                .detach();
+            while let Some((edge_idx, _)) = neighbors.next(&self.graph) {
+                let child_weight = *self.graph.edge_weight(edge_idx).unwrap();
+
+                let parent = self.get_index(self[nx].parent()).unwrap();
+                if let Some(parent_edge_idx) = self.graph.find_edge(parent, nx) {
+                    let weight = self.graph.edge_weight_mut(parent_edge_idx).unwrap();
+                    *weight += child_weight;
+                }
+            }
+        }
+    }
+
+    pub fn dir_size(&self, node: NodeIndex) -> u64 {
+        let mut cum_sum: u64 = 0;
+        for neighbor in self.graph.neighbors_directed(node, Direction::Outgoing) {
+            if let Some(edge_idx) = self.graph.find_edge(node, neighbor) {
+                cum_sum += self.graph.edge_weight(edge_idx).unwrap()
+            }
+        }
+        cum_sum
+    }
+
+    pub fn du(&mut self) -> HashMap<NodeIndex, u64> {
+        let mut disk_usage: HashMap<NodeIndex, u64> = HashMap::new();
+        self.calculate_weights();
+        let mut bfs = Bfs::new(&self.graph, self.root);
+        while let Some(nx) = bfs.next(&self.graph) {
+            match self[nx].ntype {
+                NodeType::Directory => {
+                    disk_usage.insert(nx, self.dir_size(nx));
+                }
+                _ => {}
+            }
+        }
+        disk_usage
     }
 }
