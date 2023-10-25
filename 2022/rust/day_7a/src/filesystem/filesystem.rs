@@ -1,5 +1,5 @@
 use petgraph::graph::{DiGraph, NodeIndex};
-use petgraph::visit::{Bfs, DfsPostOrder};
+use petgraph::visit::DfsPostOrder;
 use petgraph::Direction;
 use std::collections::HashMap;
 use std::ops::Index;
@@ -132,8 +132,7 @@ impl FileSystem {
     pub fn du(&mut self) -> HashMap<NodeIndex, u64> {
         let mut disk_usage: HashMap<NodeIndex, u64> = HashMap::new();
         self.calculate_weights();
-        let mut bfs = Bfs::new(&self.graph, self.root);
-        while let Some(nx) = bfs.next(&self.graph) {
+        for nx in self.graph.node_indices() {
             match self[nx].ntype {
                 NodeType::Directory => {
                     disk_usage.insert(nx, self.dir_size(nx));
