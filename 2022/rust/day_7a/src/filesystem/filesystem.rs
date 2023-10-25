@@ -3,6 +3,7 @@ use petgraph::visit::DfsPostOrder;
 use petgraph::Direction;
 use std::collections::HashMap;
 use std::ops::Index;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub enum NodeType {
@@ -108,9 +109,8 @@ impl FileSystem {
                 .neighbors_directed(nx, Direction::Outgoing)
                 .detach();
             while let Some((edge_idx, _)) = neighbors.next(&self.graph) {
-                let child_weight = *self.graph.edge_weight(edge_idx).unwrap();
-
                 let parent = self.get_index(self[nx].parent()).unwrap();
+                let child_weight = *self.graph.edge_weight(edge_idx).unwrap();
                 if let Some(parent_edge_idx) = self.graph.find_edge(parent, nx) {
                     let weight = self.graph.edge_weight_mut(parent_edge_idx).unwrap();
                     *weight += child_weight;
