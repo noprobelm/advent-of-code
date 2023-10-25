@@ -68,7 +68,7 @@ impl FileSystem {
         }
     }
 
-    pub fn get_index(&self, node: Node) -> Option<NodeIndex> {
+    fn get_index(&self, node: Node) -> Option<NodeIndex> {
         for node_idx in self.graph.node_indices() {
             if self.graph[node_idx] == node {
                 return Some(node_idx);
