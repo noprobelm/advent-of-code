@@ -3,7 +3,6 @@ use petgraph::visit::DfsPostOrder;
 use petgraph::Direction;
 use std::collections::HashMap;
 use std::ops::Index;
-use std::time::{Duration, Instant};
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub enum NodeType {
