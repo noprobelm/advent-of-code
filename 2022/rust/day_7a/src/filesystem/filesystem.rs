@@ -120,13 +120,14 @@ impl FileSystem {
     }
 
     pub fn dir_size(&self, node: NodeIndex) -> u64 {
-        let mut cum_sum: u64 = 0;
-        for neighbor in self.graph.neighbors_directed(node, Direction::Outgoing) {
-            if let Some(edge_idx) = self.graph.find_edge(node, neighbor) {
-                cum_sum += self.graph.edge_weight(edge_idx).unwrap()
-            }
-        }
-        cum_sum
+        self.graph
+            .neighbors_directed(node, Direction::Outgoing)
+            .fold(0, |acc, x| {
+                acc + self
+                    .graph
+                    .edge_weight(self.graph.find_edge(node, x).unwrap())
+                    .unwrap()
+            })
     }
 
     pub fn du(&mut self) -> HashMap<NodeIndex, u64> {
