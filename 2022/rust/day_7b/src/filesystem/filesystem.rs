@@ -1,5 +1,5 @@
 use petgraph::graph::{DiGraph, NodeIndex};
-use petgraph::visit::{DfsPostOrder, NodeFiltered};
+use petgraph::visit::DfsPostOrder;
 use petgraph::Direction;
 use std::collections::HashMap;
 use std::ops::Index;
@@ -53,22 +53,24 @@ impl Node {
 
 pub struct FileSystem {
     pub graph: DiGraph<Node, u64>,
+    pub capacity: u64,
     pub root: NodeIndex,
     pub working: NodeIndex,
 }
 
 impl FileSystem {
-    pub fn new() -> Self {
+    pub fn new(capacity: u64) -> Self {
         let mut g: DiGraph<Node, u64> = DiGraph::new();
         let root: NodeIndex = g.add_node(Node::root());
         FileSystem {
             graph: g,
+            capacity: capacity,
             root: root,
             working: root,
         }
     }
 
-    fn get_index(&self, node: Node) -> Option<NodeIndex> {
+    pub fn get_index(&self, node: Node) -> Option<NodeIndex> {
         for node_idx in self.graph.node_indices() {
             if self.graph[node_idx] == node {
                 return Some(node_idx);
