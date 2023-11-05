@@ -1,16 +1,16 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::AddAssign;
 use std::path::Path;
 
 fn main() {
     let instructions = map_instructions();
     let part_1 = part_1(&instructions);
-    println!("{part_1}");
+    println!("Santa visited delievered at least one present to {part_1} houses");
 
     let part_2 = part_2(&instructions);
-    println!("{part_2}");
+    println!("Santa and robot santa delivered at least one present to {part_2} houses together");
 }
 
 fn part_1(instructions: &Vec<Point>) -> usize {
@@ -65,21 +65,10 @@ fn map_instructions() -> Vec<Point> {
     instructions
 }
 
-#[derive(Debug, Copy, Clone, Hash, PartialOrd, Ord, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 struct Point {
     x: i32,
     y: i32,
-}
-
-impl Add for Point {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
 }
 
 impl AddAssign for Point {
