@@ -5,14 +5,14 @@ use std::path::Path;
 fn main() {
     let lines = lines_from_file("input.txt");
 
-    let day_1 = day_1(&lines);
-    println!("{day_1}");
+    let part_1 = part_1(&lines);
+    println!("{part_1}");
 
-    let day_2 = day_2(&lines);
-    println!("{day_2}");
+    let part_2 = part_2(&lines);
+    println!("{part_2}");
 }
 
-fn day_1(lines: &Vec<String>) -> u32 {
+fn part_1(lines: &Vec<String>) -> u32 {
     let mut wrapping_paper: u32 = 0;
     for line in lines {
         let mut dimensions: Vec<u32> = line
@@ -32,7 +32,7 @@ fn day_1(lines: &Vec<String>) -> u32 {
     wrapping_paper
 }
 
-fn day_2(lines: &Vec<String>) -> u32 {
+fn part_2(lines: &Vec<String>) -> u32 {
     let mut ribbon: u32 = 0;
     for line in lines {
         let mut dimensions: Vec<u32> = line
