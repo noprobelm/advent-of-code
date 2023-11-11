@@ -5,10 +5,15 @@ use std::path::Path;
 
 fn main() {
     let lines = lines_from_file("input.txt");
-    part_1(&lines)
+
+    let part_1 = part_1(&lines);
+    println!("After following Santa's instructions for changing the on/off state of our xmas lights, {part_1} lights remain on");
+
+    let part_2 = part_2(&lines);
+    println!("After following Santa's instructions for adjusting the brightness of our xmas lights, '{part_2}' is the total measured brightness");
 }
 
-fn part_1(lines: &Vec<String>) {
+fn part_1(lines: &Vec<String>) -> u32 {
     let mut count: u32 = 0;
     let mut grid = Grid::new(1000, 1000);
 
@@ -50,7 +55,49 @@ fn part_1(lines: &Vec<String>) {
         }
     }
 
-    println!("{count}");
+    count
+}
+
+fn part_2(lines: &Vec<String>) -> u32 {
+    let mut brightness: u32 = 0;
+    let mut grid = Grid::new(1000, 1000);
+
+    for line in lines {
+        let (pos_1, pos_2, instruction) = parse_instructions(&line);
+
+        match instruction {
+            "toggle" => {
+                for row in pos_1[0]..=pos_2[0] {
+                    for col in pos_1[1]..=pos_2[1] {
+                        &grid[(row, col)].increase_brightness(2);
+                    }
+                }
+            }
+            "on" => {
+                for row in pos_1[0]..=pos_2[0] {
+                    for col in pos_1[1]..=pos_2[1] {
+                        &grid[(row, col)].increase_brightness(1);
+                    }
+                }
+            }
+            "off" => {
+                for row in pos_1[0]..=pos_2[0] {
+                    for col in pos_1[1]..=pos_2[1] {
+                        &grid[(row, col)].decrease_brightness(1);
+                    }
+                }
+            }
+            _ => panic!["panik"],
+        }
+    }
+
+    for row in 0..1000 {
+        for col in 0..1000 {
+            brightness += &grid[(row, col)].brightness;
+        }
+    }
+
+    brightness
 }
 
 fn parse_instructions(unparsed: &String) -> (Vec<usize>, Vec<usize>, &str) {
@@ -101,11 +148,15 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
 #[derive(Copy, Clone, Debug)]
 struct Light {
     state: State,
+    brightness: u32,
 }
 
 impl Light {
     fn new() -> Self {
-        Light { state: State::Off }
+        Light {
+            state: State::Off,
+            brightness: 0,
+        }
     }
 
     fn toggle(&mut self) {
@@ -121,6 +172,15 @@ impl Light {
 
     fn off(&mut self) {
         self.state = State::Off;
+    }
+
+    fn increase_brightness(&mut self, n: u32) {
+        self.brightness += n;
+    }
+    fn decrease_brightness(&mut self, n: u32) {
+        if self.brightness > 0 {
+            self.brightness -= n;
+        }
     }
 }
 
