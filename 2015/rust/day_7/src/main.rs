@@ -1,4 +1,3 @@
-use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
@@ -6,11 +5,11 @@ use std::path::Path;
 
 fn main() {
     let lines = lines_from_file("input.txt");
-    let wiremap = part_1(&lines);
-    println!("After connecting all wires to their respective gates, the output of wire 'a' is assessed to be {:?}", wiremap.get("a").unwrap());
+    let part_1 = part_1(&lines);
+    println!("Part 1: After connecting all wires to their respective gates, the output of wire 'a' is assessed to be {:?}", part_1.get("a").unwrap());
 
-    let part_2 = part_2(*wiremap.get("a").unwrap(), &lines);
-    println!("{:?}", part_2)
+    let part_2 = part_2(*part_1.get("a").unwrap(), &lines);
+    println!("Part 2: If the signal to wire 'b' is overriden with the computed signal of wire 'b', the value of 'b' is {:?}", part_2);
 }
 
 fn part_1(lines: &Vec<String>) -> HashMap<&str, u32> {
@@ -24,11 +23,11 @@ fn part_1(lines: &Vec<String>) -> HashMap<&str, u32> {
             let mut input_wires: Vec<u32> = Vec::with_capacity(2);
             let output_wire = split.pop().unwrap();
 
-            if let Some(result) = mapper.get(output_wire) {
+            if let Some(_result) = mapper.get(output_wire) {
                 continue;
             }
 
-            for (i, s) in split.clone().iter().enumerate() {
+            for (_i, s) in split.clone().iter().enumerate() {
                 if let Ok(val) = s.parse::<u32>() {
                     input_wires.push(val);
                 } else if let Some(val) = mapper.get(s) {
@@ -68,11 +67,11 @@ fn part_2(a_val: u32, lines: &Vec<String>) -> u32 {
             let mut input_wires: Vec<u32> = Vec::with_capacity(2);
             let output_wire = split.pop().unwrap();
 
-            if let Some(result) = mapper.get(output_wire) {
+            if let Some(_result) = mapper.get(output_wire) {
                 continue;
             }
 
-            for (i, s) in split.clone().iter().enumerate() {
+            for (_i, s) in split.clone().iter().enumerate() {
                 if let Ok(val) = s.parse::<u32>() {
                     input_wires.push(val);
                 } else if let Some(val) = mapper.get(s) {
