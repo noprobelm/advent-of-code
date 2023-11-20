@@ -66,7 +66,7 @@ fn part_1(s: &String) -> i32 {
 /// position of the character at which the basement was first entered.
 fn part_2(s: &String) -> usize {
     let mut floor: i32 = 0;
-    let mut steps = s.chars().map(|c| match c {
+    let steps = s.chars().map(|c| match c {
         '(' => 1,
         ')' => -1,
         _ => 0,
@@ -74,7 +74,7 @@ fn part_2(s: &String) -> usize {
     for (i, step) in steps.enumerate() {
         floor += step;
         if floor == -1 {
-            return (i + 1);
+            return i + 1;
         }
     }
     panic!["Santa never entered the basement. Something must be wrong with the puzzle input."];
