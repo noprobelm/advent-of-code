@@ -40,10 +40,10 @@ fn main() {
     let lines = lines_from_file("input.txt");
 
     let part_1 = part_1(&lines);
-    println!("{part_1}");
+    println!("The sum of the surface area and the smallest side of all gifts from the puzzle input is: {part_1}");
 
     let part_2 = part_2(&lines);
-    println!("{part_2}");
+    println!("The sum of the volume and the shortest perimeter length of all gifts from the puzzle input is: {part_2}");
 }
 
 /// Calculates the total amount of wrapping paper required as a function of the sum of the surface
@@ -56,13 +56,7 @@ fn part_1(lines: &Vec<String>) -> u32 {
             .map(|d| d.parse::<u32>().expect("Not a valid u32!"))
             .collect();
 
-        dimensions.sort();
-
-        let xmas_gift = RectPrism {
-            a: dimensions[0],
-            b: dimensions[1],
-            c: dimensions[2],
-        };
+        let xmas_gift = RectPrism::new(dimensions[0], dimensions[1], dimensions[2]);
         wrapping_paper += xmas_gift.smallest_side();
         wrapping_paper += xmas_gift.surface_area();
     }
@@ -78,12 +72,8 @@ fn part_2(lines: &Vec<String>) -> u32 {
             .split("x")
             .map(|d| d.parse::<u32>().expect("Not a valid u32!"))
             .collect();
-        dimensions.sort();
-        let xmas_gift = RectPrism {
-            a: dimensions[0],
-            b: dimensions[1],
-            c: dimensions[2],
-        };
+
+        let xmas_gift = RectPrism::new(dimensions[0], dimensions[1], dimensions[2]);
         ribbon += xmas_gift.volume();
         ribbon += xmas_gift.shortest_perimeter();
     }
@@ -98,7 +88,8 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
         .collect()
 }
 
-/// Abstraction for a rectangular prism. `a`, `b`, and `c` are the dimensions.
+/// Abstraction for a rectangular prism. `a`, `b`, and `c` are the dimensions. This struct relies
+/// on `a`, `b`, and `c` being in ascending order. The `new` method will handle this automatically.
 struct RectPrism {
     a: u32,
     b: u32,
@@ -106,6 +97,11 @@ struct RectPrism {
 }
 
 impl RectPrism {
+    fn new(a: u32, b: u32, c: u32) -> Self {
+        let mut dimensions = vec![a, b, c];
+        dimensions.sort();
+        Self { a: a, b: b, c: c }
+    }
     fn surface_area(&self) -> u32 {
         2 * self.a * self.b + 2 * self.b * self.c + 2 * self.c * self.a
     }
