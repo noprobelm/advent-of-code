@@ -1,4 +1,4 @@
-//! # Advent of Code - 2015 Day 2: Not Quite Lisp
+//! # Advent of Code - 2015 Day 1: Not Quite Lisp
 //!
 //! ## Problem Description: Part 1
 //! Santa is trying to deliver presents in a large apartment building, but he can't find the right
