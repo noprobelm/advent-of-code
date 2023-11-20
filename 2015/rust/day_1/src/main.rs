@@ -1,4 +1,4 @@
-//! # Advent of Code - 2015 Day 1
+//! # Advent of Code - 2015 Day 2: Not Quite Lisp
 //!
 //! ## Problem Description: Part 1
 //! Santa is trying to deliver presents in a large apartment building, but he can't find the right
@@ -37,6 +37,7 @@
 //!    -()()) causes him to enter the basement at character position 5.
 //!
 //! What is the position of the character that causes Santa to first enter the basement?
+
 use std::fs;
 
 pub fn main() {
@@ -49,8 +50,6 @@ pub fn main() {
     println!("(Part 2): Santa first entered the basement at character position {part_2} of the instructions")
 }
 
-/// Iterate through each character of the puzzle input, mapping `(` and `)` to `1` or `-1`
-/// (respectively). Fold the resulting iterator into a cumulative sum result.
 fn part_1(s: &String) -> i32 {
     s.chars()
         .map(|c| match c {
@@ -61,9 +60,6 @@ fn part_1(s: &String) -> i32 {
         .fold(0, |acc, x| acc + x)
 }
 
-/// Map the instructions to i32 as we did in part_1. Do not fold. Iterate through each element of
-/// our map and increment `floor` by the value. After we've reached `-1`, return the `i + 1` as the
-/// position of the character at which the basement was first entered.
 fn part_2(s: &String) -> usize {
     let mut floor: i32 = 0;
     let steps = s.chars().map(|c| match c {
