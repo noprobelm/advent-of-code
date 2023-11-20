@@ -44,7 +44,7 @@ fn part_1(s: &String) {
         .map(|c| match c {
             '(' => 1,
             ')' => -1,
-            _ => panic!("Invalid instruction detected. Use '(' or '('"),
+            _ => 0,
         })
         .fold(0, |acc, x| acc + x);
     println!("(Part 1): Santa ended up on floor #{floor}");
@@ -55,7 +55,7 @@ fn part_2(s: &String) {
     let mut steps = s.chars().map(|c| match c {
         '(' => 1,
         ')' => -1,
-        _ => panic!("Invalid instruction detected. Use '(' or '('"),
+        _ => 0,
     });
     for (i, step) in steps.enumerate() {
         floor += step;
