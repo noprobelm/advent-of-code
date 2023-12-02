@@ -47,7 +47,7 @@ pub fn main() {
     println!("Part 1: {part_1}");
 
     let part_2 = part_2(s);
-    println!("Part 2: part_2")
+    println!("Part 2: {part_2}")
 }
 
 fn part_1(s: &str) -> i32 {
