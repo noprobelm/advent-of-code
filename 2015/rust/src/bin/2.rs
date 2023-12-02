@@ -38,7 +38,7 @@
 use aoc::PuzzleInput;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/2.txt");
+    let p = PuzzleInput::new("../data/2.txt");
     let lines = p.lines();
 
     let part_1 = part_1(&lines);

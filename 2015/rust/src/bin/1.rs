@@ -40,14 +40,14 @@
 extern crate aoc;
 
 pub fn main() {
-    let puzzle_input = aoc::PuzzleInput::new("../../../data/1.txt");
+    let puzzle_input = aoc::PuzzleInput::new("../data/1.txt");
     let s = puzzle_input.string();
 
     let part_1 = part_1(s);
-    println!("Part 1: Santa ended up on floor #{part_1}");
+    println!("Part 1: {part_1}");
 
     let part_2 = part_2(s);
-    println!("Part 2: Santa first entered the basement at character position {part_2} of the instructions")
+    println!("Part 2: part_2")
 }
 
 fn part_1(s: &str) -> i32 {

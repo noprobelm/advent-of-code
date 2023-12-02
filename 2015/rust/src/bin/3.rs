@@ -37,11 +37,10 @@
 use aoc::PuzzleInput;
 use std::collections::HashSet;
 use std::ops::AddAssign;
-use std::path::Path;
 
 /// Translates our puzzle input into a sequence of Points that are used in [part_1] and [part_2]
 fn main() {
-    let p = PuzzleInput::new("../../../data/3.txt");
+    let p = PuzzleInput::new("../data/3.txt");
 
     let instructions = map_instructions();
     let part_1 = part_1(&instructions);
@@ -87,7 +86,7 @@ fn part_2(instructions: &Vec<Point>) -> usize {
 }
 
 fn map_instructions() -> Vec<Point> {
-    let p = PuzzleInput::new("../../../data/3.txt");
+    let p = PuzzleInput::new("../data/3.txt");
     let lines = p.lines();
     let mut instructions: Vec<Point> = Vec::new();
     for line in lines {
