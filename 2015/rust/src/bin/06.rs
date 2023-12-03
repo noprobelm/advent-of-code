@@ -1,8 +1,5 @@
 use aoc::PuzzleInput;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
 use std::ops::{Index, IndexMut};
-use std::path::Path;
 
 fn main() {
     let p = PuzzleInput::new("../data/6.txt");
@@ -26,21 +23,21 @@ fn part_1(lines: &Vec<&str>) -> u32 {
             "toggle" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].toggle();
+                        grid[(row, col)].toggle();
                     }
                 }
             }
             "on" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].on();
+                        grid[(row, col)].on();
                     }
                 }
             }
             "off" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].off();
+                        grid[(row, col)].off();
                     }
                 }
             }
@@ -71,21 +68,21 @@ fn part_2(lines: &Vec<&str>) -> u32 {
             "toggle" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].increase_brightness(2);
+                        grid[(row, col)].increase_brightness(2);
                     }
                 }
             }
             "on" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].increase_brightness(1);
+                        grid[(row, col)].increase_brightness(1);
                     }
                 }
             }
             "off" => {
                 for row in pos_1[0]..=pos_2[0] {
                     for col in pos_1[1]..=pos_2[1] {
-                        &grid[(row, col)].decrease_brightness(1);
+                        grid[(row, col)].decrease_brightness(1);
                     }
                 }
             }
@@ -137,14 +134,6 @@ fn parse_instructions(unparsed: &str) -> (Vec<usize>, Vec<usize>, &str) {
         }
         _ => panic!["panik"],
     }
-}
-
-fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
-    let file = File::open(filename).expect("no such file");
-    let buf = BufReader::new(file);
-    buf.lines()
-        .map(|l| l.expect("Could not parse line"))
-        .collect()
 }
 
 #[derive(Copy, Clone, Debug)]
