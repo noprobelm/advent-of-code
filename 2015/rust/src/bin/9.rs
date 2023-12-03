@@ -1,12 +1,9 @@
 use aoc::PuzzleInput;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
-use std::path::Path;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/9.txt");
+    let p = PuzzleInput::new("../data/9.txt");
     let lines = p.lines();
     let part_1 = part_1(&lines);
     println!("Part 1: {part_1}");

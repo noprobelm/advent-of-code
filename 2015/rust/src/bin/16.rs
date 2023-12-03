@@ -54,7 +54,7 @@ use aoc::PuzzleInput;
 use std::collections::HashMap;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/16.txt");
+    let p = PuzzleInput::new("../data/16.txt");
     let lines = p.lines();
     let correct_sue: HashMap<&str, u32> = HashMap::from([
         ("id", 0),

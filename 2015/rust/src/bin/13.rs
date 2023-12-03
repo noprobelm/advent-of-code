@@ -21,7 +21,7 @@ use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/13.txt");
+    let p = PuzzleInput::new("../data/13.txt");
     let lines = p.lines();
 
     let part_1 = part_1(&lines);

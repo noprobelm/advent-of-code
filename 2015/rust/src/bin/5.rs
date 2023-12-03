@@ -2,7 +2,7 @@ use aoc::PuzzleInput;
 use std::collections::HashMap;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/5.txt");
+    let p = PuzzleInput::new("../data/5.txt");
     let lines = p.lines();
 
     let part_1 = part_1(&lines);

@@ -5,7 +5,7 @@ use std::ops::{Index, IndexMut};
 use std::path::Path;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/6.txt");
+    let p = PuzzleInput::new("../data/6.txt");
     let lines = p.lines();
 
     let part_1 = part_1(&lines);

@@ -2,7 +2,7 @@ use aoc::PuzzleInput;
 use regex::Regex;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/8.txt");
+    let p = PuzzleInput::new("../data/8.txt");
     let lines = p.lines();
     let part_1 = part_1(&lines);
     println!("Part 1: {part_1}");

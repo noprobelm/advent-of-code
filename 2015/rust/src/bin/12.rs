@@ -4,7 +4,7 @@ use std::io::Read;
 use std::io::Result;
 
 fn main() {
-    let json_raw = file_to_string("../../../data/12.txt").expect("Not a valid file");
+    let json_raw = file_to_string("../data/12.txt").expect("Not a valid file");
     let json: Value = serde_json::from_str(&json_raw).expect("JSON was not well-formatted");
 
     let part_1 = part_1(&json);

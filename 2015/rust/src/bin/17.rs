@@ -27,7 +27,7 @@
 use aoc::PuzzleInput;
 
 fn main() {
-    let p = PuzzleInput::new("../../../data/17.txt");
+    let p = PuzzleInput::new("../data/17.txt");
     let lines: Vec<u32> = p
         .lines()
         .iter()
