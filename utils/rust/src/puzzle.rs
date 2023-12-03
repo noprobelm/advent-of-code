@@ -1,6 +1,4 @@
 use std::fs;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
 use std::path::Path;
 
 pub struct PuzzleInput {
