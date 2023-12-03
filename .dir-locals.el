@@ -1,1 +1,0 @@
-(setq eglot-workspace-configuration
