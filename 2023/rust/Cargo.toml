@@ -1,19 +1,13 @@
 [package]
-name = "aoc-rust"
+name = "year-2023"
 version = "0.1.0"
 edition = "2021"
-
-[workspace]
-members = [
-"2015/rust",
-"2022/rust",
-"2023/rust"
-]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aoc = { path = "../../utils/rust" }
+itertools = "0.12.0"
+petgraph = "0.6.4"
+regex = "1.10.2"
 
-[lib]
-name = "aoc"
-path = "utils/rust/src/lib.rs"
