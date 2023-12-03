@@ -3,7 +3,7 @@ use std::io::{prelude::*, BufReader};
 use std::path::Path;
 
 use petgraph::graph::{DiGraph, NodeIndex};
-use petgraph::visit::{DfsPostOrder, NodeFiltered};
+use petgraph::visit::{DfsPostOrder};
 use petgraph::Direction;
 use std::collections::HashMap;
 use std::ops::Index;
