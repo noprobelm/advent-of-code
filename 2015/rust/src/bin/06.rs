@@ -200,10 +200,10 @@ struct Grid {
 impl Grid {
     fn new(size_x: usize, size_y: usize) -> Self {
         let mut grid: Vec<Vec<Light>> = Vec::with_capacity(size_y);
-        for y in 0..size_y {
+        for _y in 0..size_y {
             let mut row: Vec<Light> = Vec::with_capacity(size_x);
-            for i in 0..size_x {
-                let mut light = Light::new();
+            for _i in 0..size_x {
+                let light = Light::new();
                 row.push(light);
             }
             grid.push(row);

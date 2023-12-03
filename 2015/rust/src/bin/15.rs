@@ -62,7 +62,7 @@ fn main() {
     ];
 
     let combinations: Vec<Vec<Ingredient>> = combinations_no_repitition(ingredients, 100);
-    let part_1 = part_1(combinations.clone());
+    let _part_1 = part_1(combinations.clone());
     println!("Part 1: {:?}", combinations.len());
 
     let part_2 = part_2(combinations.clone());

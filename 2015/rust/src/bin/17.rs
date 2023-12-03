@@ -50,7 +50,7 @@ fn part_1(nums: &Vec<u32>) -> u32 {
 /// Finds the minimum length subset of nums whose sum is equal to 150, then finds the number of possible subsets whose
 /// length are equal to this number.
 fn part_2(nums: &Vec<u32>) -> u32 {
-    let mut subsets = find_subset_sums(150, nums);
+    let subsets = find_subset_sums(150, nums);
     let sizes: Vec<usize> = subsets.iter().map(|v| v.len()).collect();
     sizes
         .iter()

@@ -26,7 +26,7 @@ fn look_and_say(s: &String) -> String {
 }
 fn part_1(n: &u32) -> usize {
     let mut new: String = n.to_string();
-    for i in 0..40 {
+    for _i in 0..40 {
         new = look_and_say(&new);
     }
     new.len()
@@ -34,7 +34,7 @@ fn part_1(n: &u32) -> usize {
 
 fn part_2(n: &u32) -> usize {
     let mut new: String = n.to_string();
-    for i in 0..50 {
+    for _i in 0..50 {
         new = look_and_say(&new);
     }
     new.len()

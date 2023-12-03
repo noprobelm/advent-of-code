@@ -40,7 +40,7 @@ use std::ops::AddAssign;
 
 /// Translates our puzzle input into a sequence of Points that are used in [part_1] and [part_2]
 fn main() {
-    let p = PuzzleInput::new("../data/3.txt");
+    let _p = PuzzleInput::new("../data/3.txt");
 
     let instructions = map_instructions();
     let part_1 = part_1(&instructions);
