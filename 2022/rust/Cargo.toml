@@ -1,5 +1,5 @@
 [package]
-name = "rust"
+name = "year-2022"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,8 +8,4 @@ edition = "2021"
 [dependencies]
 aoc = { path = "../../utils/rust" }
 itertools = "0.12.0"
-
-[[bin]]
-name = "4"
-path = "src/bin/4.rs"
-
+petgraph = "0.6.4"
