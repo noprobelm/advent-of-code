@@ -207,7 +207,6 @@ dependencies = [
  "aoc",
  "itertools",
  "petgraph",
- "regex",
 ]
 
 [[package]]
