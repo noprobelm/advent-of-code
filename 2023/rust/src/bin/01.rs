@@ -31,6 +31,9 @@ fn part_2(lines: &Vec<&str>) -> u32 {
         "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "1", "2", "3", "4",
         "5", "6", "7", "8", "9",
     ];
+    // The max characlength of any of our patterns
+    let max_match_len = 5;
+
     let mapper: HashMap<&str, u32> = HashMap::from([
         ("one", 1),
         ("two", 2),
@@ -60,18 +63,16 @@ fn part_2(lines: &Vec<&str>) -> u32 {
                     start += 1;
                     end = start;
                 }
-            } else {
-                end += 1;
-            }
-            if end == line.len() {
+            } else if end == line.len() - 1 || end - start == max_match_len {
                 start += 1;
                 end = start;
+            } else {
+                end += 1;
             }
         }
         let n = [*matches.first().unwrap(), *matches.last().unwrap()]
             .iter()
             .fold(0, |acc, x| acc * 10 + x);
-        println!("{line}: {:?}, {n}", matches);
 
         answer += n;
     }
