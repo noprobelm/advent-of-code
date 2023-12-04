@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "year_2022"
+name = "year_2023"
 version = "0.1.0"
 description = ""
 authors = ["noprobelm <noprobelm@protonmail.com>"]
@@ -11,8 +11,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.11"
 rich = "^13.7.0"
-numpy = "^1.26.2"
-networkx = "^3.2.1"
+regex = "^2023.10.3"
 
 
 [build-system]
@@ -24,12 +23,3 @@ build-backend = "poetry.core.masonry.api"
 2 = 'python.2:main'
 3 = 'python.3:main'
 4 = 'python.4:main'
-5 = 'python.5:main'
-6 = 'python.6:main'
-7 = 'python.7:main'
-8 = 'python.8:main'
-9 = 'python.9:main'
-10 = 'python.10:main'
-11 = 'python.11:main'
-12 = 'python.12:main'
-13 = 'python.13:main'
