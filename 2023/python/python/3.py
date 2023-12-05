@@ -19,6 +19,67 @@ def main():
     print(f"Part 2: {answer_2}")
 
 
+def part_1(lines: list[str]):
+    answer = 0
+    matrix = [list(line) for line in lines]
+    y_max = len(matrix) - 1
+    for row, line in enumerate(lines):
+        x_max = len(line) - 1
+        nums = re.finditer(r"\d+", "".join(line))
+        for i in nums:
+            val = i.group()
+            span = range(*i.span())
+            neighbor_positions = neighbors_xy(row, span, x_max, y_max)
+            neighbors = [matrix[p.y][p.x] for p in neighbor_positions]
+            if len(list(filter(lambda s: s != "." or s.isdigit(), neighbors))) > 0:
+                answer += int(val)
+
+    return answer
+
+
+def part_2(lines: list[str]):
+    answer = 0
+    matrix = [list(line) for line in lines]
+    y_max = len(matrix)
+    for row, line in enumerate(lines):
+        x_max = len(line)
+        gears = re.finditer(r"\*", "".join(line))
+        for i in gears:
+            nums = []
+            span = range(*i.span())
+            neighbor_positions = neighbors_xy(row, span, x_max, y_max)
+            above = list(filter(lambda p: p.y == row - 1, neighbor_positions))
+            current = list(filter(lambda p: p.y == row, neighbor_positions))
+            below = list(filter(lambda p: p.y == row + 1, neighbor_positions))
+
+            for r in [above, current, below]:
+                num = []
+                y = r[0].y
+                neighbor_x_min = min([p.x for p in r])
+                neighbor_x_max = max([p.x for p in r])
+                while neighbor_x_min > 0 and matrix[y][neighbor_x_min].isdigit():
+                    neighbor_x_min -= 1
+                while neighbor_x_max < x_max and matrix[y][neighbor_x_max].isdigit():
+                    neighbor_x_max += 1
+
+                for x in range(neighbor_x_min, neighbor_x_max):
+                    c = matrix[y][x]
+                    if c.isdigit():
+                        num.append(c)
+                    elif len(num) > 0:
+                        nums.append(int("".join(num)))
+                        num = []
+
+                if len(num) > 0:
+                    nums.append(int("".join(num)))
+                    num = []
+
+            if len(nums) == 2:
+                answer += nums[0] * nums[1]
+
+    return answer
+
+
 def neighbors_xy(row: int, span: range, x_max: int, y_max: int) -> list[Point]:
     neighbors = []
     x1 = 0 if span[0] == 0 else span[0] - 1
@@ -39,103 +100,3 @@ def neighbors_xy(row: int, span: range, x_max: int, y_max: int) -> list[Point]:
                 neighbors.append(Point(x2, i))
 
     return neighbors
-
-
-def part_1(lines: list[str]):
-    answer = 0
-    matrix = [list(line) for line in lines]
-    matrix_len = len(matrix)
-    for row, line in enumerate(lines):
-        row_len = len(line)
-        nums = re.finditer(r"\d+", "".join(line))
-        for k in nums:
-            val = k.group()
-            span = range(*k.span())
-            neighbor_positions = neighbors_xy(row, span, row_len - 1, matrix_len - 1)
-            neighbors = [matrix[p.y][p.x] for p in neighbor_positions]
-            if len(list(filter(lambda s: s != "." or s.isdigit(), neighbors))) > 0:
-                answer += int(val)
-
-    return answer
-
-
-def part_2(lines: list[str]):
-    answer = 0
-    matrix = [list(line) for line in lines]
-    for row, line in enumerate(lines):
-        gears = re.finditer(r"\*", "".join(line))
-        for k in gears:
-            val = k.group()
-            span = range(*k.span())
-            part = Part(val, row, span)
-            adjacent_part_numbers = part.find_adjacent_part_numbers(matrix)
-            if len(adjacent_part_numbers) == 2:
-                answer += adjacent_part_numbers[0] * adjacent_part_numbers[1]
-
-    return answer
-
-
-class Part:
-    def __init__(self, val: str, row: int, span: range):
-        self.val = val
-        self.row = row
-        self.span = span
-
-    def find_adjacent_part_numbers(self, table_data: list[list[str]]):
-        part_numbers = []
-        if self.row == 0:
-            y1 = self.row
-        else:
-            y1 = self.row - 1
-
-        if self.row == len(table_data) - 1:
-            y2 = self.row
-        else:
-            y2 = self.row + 1
-
-        if self.span[0] == 0:
-            x1 = 0
-        else:
-            x1 = self.span[0] - 1
-
-        if self.span[-1] == len(table_data[self.row]) - 1:
-            x2 = self.span[-1]
-        else:
-            x2 = self.span[-1] + 1
-
-        adjacent = []
-        for row in range(y1, y2 + 1):
-            if row == self.row:
-                i = x1
-                while i >= 0 and table_data[row][i].isdigit():
-                    adjacent.append(table_data[row][i])
-                    i -= 1
-                if len(adjacent) > 0:
-                    n = int("".join(list(reversed(adjacent))))
-                    part_numbers.append(n)
-                    adjacent = []
-                i = x2
-                while i < len(table_data[row]) and table_data[row][i].isdigit():
-                    adjacent.append(table_data[row][i])
-                    i += 1
-                if len(adjacent) > 0:
-                    n = int("".join(adjacent))
-                    part_numbers.append(n)
-                    adjacent = []
-            else:
-                start = x1
-                while table_data[row][start].isdigit() and start > 0:
-                    start -= 1
-                end = x2
-                while table_data[row][end].isdigit() and end < len(table_data) - 1:
-                    end += 1
-
-                for i in table_data[row][start : end + 1]:
-                    if i.isdigit():
-                        adjacent.append(i)
-                    elif len(adjacent) > 0:
-                        n = int("".join(list(adjacent)))
-                        part_numbers.append(n)
-                        adjacent = []
-
-        return part_numbers
