@@ -49,12 +49,12 @@ def part_1(lines: list[str]):
         row_len = len(line)
         nums = re.finditer(r"\d+", "".join(line))
         for k in nums:
-            n = k.group()
+            val = k.group()
             span = range(*k.span())
             neighbor_positions = neighbors_xy(row, span, row_len - 1, matrix_len - 1)
             neighbors = [matrix[p.y][p.x] for p in neighbor_positions]
             if len(list(filter(lambda s: s != "." or s.isdigit(), neighbors))) > 0:
-                answer += int(n)
+                answer += int(val)
 
     return answer
 
@@ -80,39 +80,6 @@ class Part:
         self.val = val
         self.row = row
         self.span = span
-
-    def find_neighbors(self, table_data: list[list[str]]):
-        neighbors = []
-        if self.row == 0:
-            y1 = self.row
-        else:
-            y1 = self.row - 1
-
-        if self.row == len(table_data) - 1:
-            y2 = self.row
-        else:
-            y2 = self.row + 1
-
-        if self.span[0] == 0:
-            x1 = 0
-        else:
-            x1 = self.span[0] - 1
-
-        if self.span[-1] == len(table_data[self.row]) - 1:
-            x2 = self.span[-1]
-        else:
-            x2 = self.span[-1] + 1
-
-        for row in range(y1, y2 + 1):
-            if row == self.row:
-                if x1 > 0:
-                    neighbors.append(table_data[row][x1])
-                if x2 < len(table_data[self.row]) - 1:
-                    neighbors.append(table_data[row][x2])
-            else:
-                for i in range(x1, x2 + 1):
-                    neighbors.append(table_data[row][i])
-        return neighbors
 
     def find_adjacent_part_numbers(self, table_data: list[list[str]]):
         part_numbers = []
