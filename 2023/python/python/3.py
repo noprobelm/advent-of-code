@@ -9,10 +9,10 @@ def main():
     lines = data.split("\n")
 
     answer_1 = part_1(lines)
-    print(answer_1)
+    print(f"Part 1: {answer_1}")
 
     answer_2 = part_2(lines)
-    print(answer_2)
+    print(f"Part 2: {answer_2}")
 
 
 def part_1(lines: list[str]):
@@ -42,7 +42,6 @@ def part_2(lines: list[str]):
             span = range(*k.span())
             part = Part(val, row, span)
             adjacent_part_numbers = part.find_adjacent_part_numbers(matrix)
-            print(f"Asterisk on row {row} is adjavent to {adjacent_part_numbers}")
             if len(adjacent_part_numbers) == 2:
                 answer += adjacent_part_numbers[0] * adjacent_part_numbers[1]
 
@@ -112,7 +111,6 @@ class Part:
 
         adjacent = []
         for row in range(y1, y2 + 1):
-            part_number = ""
             if row == self.row:
                 i = x1
                 while i >= 0 and table_data[row][i].isdigit():
