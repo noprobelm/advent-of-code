@@ -1,6 +1,10 @@
 import re
 import os
+from collections import namedtuple
 from . import PUZZLE_DIR
+
+
+Point = namedtuple("Point", ["x", "y"])
 
 
 def main():
@@ -15,18 +19,41 @@ def main():
     print(f"Part 2: {answer_2}")
 
 
+def neighbors_xy(row: int, span: range, x_max: int, y_max: int) -> list[Point]:
+    neighbors = []
+    x1 = 0 if span[0] == 0 else span[0] - 1
+    x2 = span[-1] if span[-1] == x_max else span[-1] + 1
+
+    y1 = 0 if row == 0 else row - 1
+    y2 = row if row == y_max else row + 1
+
+    for i in range(y1, y2 + 1):
+        if i != row:
+            for k in range(x1, x2 + 1):
+                neighbors.append(Point(k, i))
+
+        else:
+            if x1 < span[0]:
+                neighbors.append(Point(x1, i))
+            if x2 > span[-1]:
+                neighbors.append(Point(x2, i))
+
+    return neighbors
+
+
 def part_1(lines: list[str]):
     answer = 0
     matrix = [list(line) for line in lines]
+    matrix_len = len(matrix)
     for row, line in enumerate(lines):
+        row_len = len(line)
         nums = re.finditer(r"\d+", "".join(line))
         for k in nums:
             n = k.group()
             span = range(*k.span())
-            part = Part(n, row, span)
-            neighbors = part.find_neighbors(matrix)
-            filtered = list(filter(lambda s: s != "." or s.isdigit(), neighbors))
-            if len(filtered) > 0:
+            neighbor_positions = neighbors_xy(row, span, row_len - 1, matrix_len - 1)
+            neighbors = [matrix[p.y][p.x] for p in neighbor_positions]
+            if len(list(filter(lambda s: s != "." or s.isdigit(), neighbors))) > 0:
                 answer += int(n)
 
     return answer
