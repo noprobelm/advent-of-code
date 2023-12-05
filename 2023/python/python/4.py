@@ -20,6 +20,8 @@ def part_1(lines: list[str]):
     for line in lines:
         _, winning, draws = parse_card(line)
         matches = [n for n in draws if n in winning]
+
+        # Could use reduce() here, but I like to stick to the stdlib for these puzzles.
         if len(matches) == 0:
             points = 0
         else:
@@ -40,7 +42,6 @@ def part_2(lines: list[str]):
 
     for card_id in cards:
         matches = winnings[card_id]
-        # Could use reduce() here, but I like to stick to the stdlib for these puzzles.
         for n in range(len(matches)):
             cards.append(card_id + n + 1)
 
