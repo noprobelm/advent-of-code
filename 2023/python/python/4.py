@@ -18,54 +18,32 @@ def main():
 def part_1(lines: list[str]):
     answer = 0
     for line in lines:
-        split = re.split(r":\s+", line)
-        numbers = re.split(r"\|", split[1])
-        winning_numbers = re.findall(r"\d+", numbers[0])
-        card_numbers = re.findall(r"\d+", numbers[1])
-
-        num_found = 0
-        for num in card_numbers:
-            if num in winning_numbers:
-                num_found += 1
-        if num_found == 0:
+        _, winning, draws = parse_card(line)
+        matches = [n for n in draws if n in winning]
+        if len(matches) == 0:
             points = 0
         else:
             points = 1
-            for _ in range(num_found - 1):
+            for _ in range(len(matches) - 1):
                 points *= 2
         answer += points
     return answer
 
 
 def part_2(lines: list[str]):
-    answer = 0
-    cards = {}
-    rounds = [[]]
-    for card in lines:
-        card_id, winning, nums = parse_card(card)
-        cards[card_id] = {
-            "winning": winning,
-            "nums": nums,
-        }
-        rounds[0].append(card_id)
+    winnings = {}
+    cards = []
+    for line in lines:
+        card_id, winning, draws = parse_card(line)
+        winnings[card_id] = [n for n in draws if n in winning]
+        cards.append(card_id)
 
-    current = 0
-    while True:
-        rounds.append([])
-        for card_id in rounds[current]:
-            num_found = 0
-            winning = cards[card_id]["winning"]
-            nums = cards[card_id]["nums"]
-            for num in nums:
-                if num in winning:
-                    num_found += 1
-            for k in range(num_found):
-                rounds[current + 1].append(card_id + k + 1)
-        if len(rounds[current + 1]) == 0:
-            break
-        current += 1
+    for card_id in cards:
+        matches = winnings[card_id]
+        for n in range(len(matches)):
+            cards.append(card_id + n + 1)
 
-    return sum([len(r) for r in rounds])
+    return len(cards)
 
 
 def parse_card(s: str):
