@@ -28,7 +28,7 @@
 //! The machine replaces without regard for the surrounding characters. For example, given the string H2O, the transition H => OO would result in OO2O.
 //!
 //! Your puzzle input describes all of the possible replacements and, at the bottom, the medicine molecule for which you need to calibrate the machine. How many distinct molecules can be created after all the different ways you can do one replacement on the medicine molecule?
-//! Problem Description: Part 2
+//! ## Problem Description: Part 2
 //! Now that the machine is calibrated, you're ready to begin molecule fabrication.
 //!
 //! Molecule fabrication always begins with just a single electron, e, and applying replacements one at a time, just like the ones during calibration.
