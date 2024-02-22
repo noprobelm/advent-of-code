@@ -98,6 +98,5 @@ fn part_2(medicine: &str, replacements: &HashMap<&str, Vec<&str>>) -> u32 {
     let num_molecules = molecules.len();
     let num_separators: usize = molecules.iter().filter(|m| m == &&"Rn" || m == &&"Ar").collect::<Vec<&&str>>().len();
     let num_y: usize = molecules.iter().filter(|m| m == &&"Y").collect::<Vec<&&str>>().len();
-
     (num_molecules - num_separators - num_y * 2 - 1).try_into().unwrap()
 }
