@@ -73,7 +73,7 @@ fn part_1(molecule: &str, replacements: &HashMap<&str, Vec<&str>>) -> HashSet<St
     let mut molecules: HashSet<String> = HashSet::new();
     let re = regex::Regex::new(r"[A-Z][a-z]?").unwrap();
     let matches = re.find_iter(molecule);
-    for (i, mat) in matches.enumerate() {
+    for (_, mat) in matches.enumerate() {
         if replacements.get(mat.as_str()).is_some() {
             for val in replacements.get(mat.as_str()) {
                 for element in val {
