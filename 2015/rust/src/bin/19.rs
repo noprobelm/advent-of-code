@@ -67,6 +67,10 @@ fn main() {
     }
     let part_1 = part_1(lines.last().unwrap(), &replacements);
     println!("{:?}", part_1.len());
+
+    let part_2 = part_2(lines.last().unwrap(), &replacements);
+    println!("{:?}", part_2);
+
 }
 
 fn part_1(medicine: &str, replacements: &HashMap<&str, Vec<&str>>) -> HashSet<String> {
@@ -86,6 +90,14 @@ fn part_1(medicine: &str, replacements: &HashMap<&str, Vec<&str>>) -> HashSet<St
     molecules
 }
 
-fn part_2(lines: &Vec<&str>) -> String {
-    todo!();
+fn part_2(medicine: &str, replacements: &HashMap<&str, Vec<&str>>) -> u32 {
+    // I solved this problem using the solution listed here: https://www.reddit.com/r/adventofcode/comments/3xflz8/comment/cy4etju/?utm_source=share&utm_medium=web2x&context=3
+    // I will have to revisit this later to truly understand the logic behind this problem. The answer is deterministic: there is no /shortest path/, in fact, there is only one possible path.
+    let re = regex::Regex::new(r"[A-Z][a-z]?").unwrap();
+    let molecules: Vec<&str> = re.find_iter(medicine).map(|m| m.as_str()).collect();
+    let num_molecules = molecules.len();
+    let num_separators: usize = molecules.iter().filter(|m| m == &&"Rn" || m == &&"Ar").collect::<Vec<&&str>>().len();
+    let num_y: usize = molecules.iter().filter(|m| m == &&"Y").collect::<Vec<&&str>>().len();
+
+    (num_molecules - num_separators - num_y * 2 - 1).try_into().unwrap()
 }
