@@ -69,19 +69,17 @@ fn main() {
     println!("{:?}", part_1.len());
 }
 
-fn part_1(molecule: &str, replacements: &HashMap<&str, Vec<&str>>) -> HashSet<String> {
+fn part_1(medicine: &str, replacements: &HashMap<&str, Vec<&str>>) -> HashSet<String> {
     let mut molecules: HashSet<String> = HashSet::new();
     let re = regex::Regex::new(r"[A-Z][a-z]?").unwrap();
-    let matches = re.find_iter(molecule);
+    let matches = re.find_iter(medicine);
     for (_, mat) in matches.enumerate() {
-        if replacements.get(mat.as_str()).is_some() {
-            for val in replacements.get(mat.as_str()) {
-                for element in val {
-                    let mut new_molecule: String = String::from(&molecule[0..mat.start()]);
-                    new_molecule.push_str(element);
-                    new_molecule.push_str(&molecule[mat.end()..]);
-                    molecules.insert(new_molecule);
-                }
+        if let Some(replacement) = replacements.get(mat.as_str()) {
+            for mol in replacement {
+                let mut new_molecule: String = String::from(&medicine[0..mat.start()]);
+                new_molecule.push_str(mol);
+                new_molecule.push_str(&medicine[mat.end()..]);
+                molecules.insert(new_molecule);
             }
         }
     }
