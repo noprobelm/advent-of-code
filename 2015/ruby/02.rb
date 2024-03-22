@@ -2,7 +2,7 @@ def part1(lines)
   wrapping_paper = 0
   lines.each do |d|
     d = d.sort
-    wrapping_paper += (d[0] * d[1] * 2) + (d[0] * d[2] * 2) + (d[1] * d[2] * 2) + (d[0] * d[1])
+    wrapping_paper += d[0] * d[1] * 2 + d[0] * d[2] * 2 + d[1] * d[2] * 2 + d[0] * d[1]
   end
   wrapping_paper
 end
@@ -11,7 +11,7 @@ def part2(lines)
   ribbon = 0
   lines.each do |d|
     d = d.sort
-    ribbon += (d[0] * 2) + (d[1] * 2) + d[0] * d[1] * d[2]
+    ribbon += d[0] * 2 + d[1] * 2 + d[0] * d[1] * d[2]
   end
   ribbon
 end
