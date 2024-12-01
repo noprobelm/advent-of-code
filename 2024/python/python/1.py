@@ -1,5 +1,5 @@
 import os
-from . import PUZZLE_PATH
+from . import PuzzleInput
 
 def part_1(left: list[int], right: list[int]) -> int:
     distance = 0
@@ -20,8 +20,8 @@ def part_2(left: list[int], right: list[int]) -> int:
     return count
 
 def main() -> None:
-    with open(os.path.join(PUZZLE_PATH, "1.txt"), "r") as f:
-        lines = f.readlines()
+    puzzle_input = PuzzleInput("1.txt")
+    lines = puzzle_input.lines()
 
     left = []
     right = []
