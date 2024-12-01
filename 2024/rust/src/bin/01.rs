@@ -1,5 +1,4 @@
 use aoc::PuzzleInput;
-use std::collections::HashMap;
 
 fn main() {
     let p = PuzzleInput::new("../data/1.txt");
