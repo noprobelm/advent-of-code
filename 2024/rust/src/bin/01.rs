@@ -12,10 +12,9 @@ fn main() {
 }
 
 fn part_1(lines: &Vec<&str>) -> u32 {
-    let mut distance: i32 = 0;
     let mut left: Vec<i32> = Vec::new();
     let mut right: Vec<i32> = Vec::new();
-    for line in lines {
+    lines.iter().for_each(|line| {
         line.split("   ")
             .map(|n| n.parse::<i32>().expect("Not a valid i32!"))
             .collect::<Vec<i32>>()
@@ -28,16 +27,20 @@ fn part_1(lines: &Vec<&str>) -> u32 {
                     left.push(*n)
                 }
             });
-    }
+    });
 
     left.sort();
     right.sort();
-    let zipped: Vec<(&i32, &i32)> = left.iter().zip(right.iter()).collect();
-    zipped.iter().for_each(|(left_n, right_n)| {
-        distance += (**left_n - **right_n).abs();
-    });
 
-    distance.try_into().unwrap()
+    left.iter()
+        .zip(right.iter())
+        .collect::<Vec<(&i32, &i32)>>()
+        .iter()
+        .fold(0, |acc, (left_n, right_n)| {
+            acc + (**left_n - **right_n).abs()
+        })
+        .try_into()
+        .unwrap()
 }
 
 fn part_2(lines: &Vec<&str>) -> u32 {
@@ -60,7 +63,11 @@ fn part_2(lines: &Vec<&str>) -> u32 {
     }
 
     left.iter().for_each(|left_n| {
-        let len: u32 = right.iter().filter(|right_n| *right_n == left_n).collect::<Vec<&u32>>().len() as u32;
+        let len: u32 = right
+            .iter()
+            .filter(|right_n| *right_n == left_n)
+            .collect::<Vec<&u32>>()
+            .len() as u32;
         count += left_n * len;
     });
 
