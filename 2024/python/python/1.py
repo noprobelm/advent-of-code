@@ -11,7 +11,15 @@ def part_1(left: list[int], right: list[int]) -> int:
 
     return distance
 
-def main():
+def part_2(left: list[int], right: list[int]) -> int:
+    count = 0
+    for left_n in left:
+        matched = list(filter(lambda right_n: right_n == left_n, right))
+        count += left_n * len(matched)
+
+    return count
+
+def main() -> None:
     with open(os.path.join(PUZZLE_PATH, "1.txt"), "r") as f:
         lines = f.readlines()
 
@@ -24,6 +32,9 @@ def main():
 
     distance = part_1(left, right)
     print(f"Part 1: {distance}")
+
+    count = part_2(left, right)
+    print(f"Part 2: {count}")
 
 if __name__ == "__main__":
     main()
