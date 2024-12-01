@@ -6,6 +6,9 @@ fn main() {
 
     let part_1 = part_1(&lines);
     println!("Part 1: {part_1}");
+
+    let part_2 = part_2(&lines);
+    println!("Part 2: {part_2}");
 }
 
 fn part_1(lines: &Vec<&str>) -> u32 {
@@ -14,7 +17,7 @@ fn part_1(lines: &Vec<&str>) -> u32 {
     let mut right: Vec<i32> = Vec::new();
     for line in lines {
         line.split("   ")
-            .map(|n| n.parse::<i32>().expect("Not a valid u32!"))
+            .map(|n| n.parse::<i32>().expect("Not a valid i32!"))
             .collect::<Vec<i32>>()
             .iter()
             .enumerate()
@@ -37,3 +40,29 @@ fn part_1(lines: &Vec<&str>) -> u32 {
     distance.try_into().unwrap()
 }
 
+fn part_2(lines: &Vec<&str>) -> u32 {
+    let mut count: u32 = 0;
+    let mut left: Vec<u32> = Vec::new();
+    let mut right: Vec<u32> = Vec::new();
+    for line in lines {
+        line.split("   ")
+            .map(|n| n.parse::<u32>().expect("Not a valid u32!"))
+            .collect::<Vec<u32>>()
+            .iter()
+            .enumerate()
+            .for_each(|(i, n)| {
+                if i % 2 == 0 {
+                    right.push(*n)
+                } else {
+                    left.push(*n)
+                }
+            });
+    }
+
+    left.iter().for_each(|left_n| {
+        let len: u32 = right.iter().filter(|right_n| *right_n == left_n).collect::<Vec<&u32>>().len() as u32;
+        count += left_n * len;
+    });
+
+    count
+}
