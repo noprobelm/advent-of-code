@@ -1,6 +1,23 @@
 import os
 from . import PuzzleInput
 
+def main() -> None:
+    puzzle_input = PuzzleInput("1.txt")
+    lines = puzzle_input.lines()
+
+    left = []
+    right = []
+    for i, line in enumerate(lines):
+        left_n, right_n = line.split("   ")
+        left.append(int(left_n))
+        right.append(int(right_n))
+
+    distance = part_1(left, right)
+    print(f"Part 1: {distance}")
+
+    count = part_2(left, right)
+    print(f"Part 2: {count}")
+
 def part_1(left: list[int], right: list[int]) -> int:
     distance = 0
     left = list(sorted(left))
@@ -18,23 +35,6 @@ def part_2(left: list[int], right: list[int]) -> int:
         count += left_n * len(matched)
 
     return count
-
-def main() -> None:
-    puzzle_input = PuzzleInput("1.txt")
-    lines = puzzle_input.lines()
-
-    left = []
-    right = []
-    for i, line in enumerate(lines):
-        left_n, right_n = line.split("   ")
-        left.append(int(left_n))
-        right.append(int(right_n))
-
-    distance = part_1(left, right)
-    print(f"Part 1: {distance}")
-
-    count = part_2(left, right)
-    print(f"Part 2: {count}")
 
 if __name__ == "__main__":
     main()
