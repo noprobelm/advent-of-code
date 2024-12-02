@@ -12,16 +12,13 @@ fn main() {
     println!("Part 2: {part_2}");
 }
 
+fn within_range(n: &i32, n1: &i32) -> bool {
+    let range = (n - n1).abs();
+    range >= 1 && range <= 3
+}
+
 fn part_1(lines: &Vec<&str>) -> u32 {
     let mut answer = 0;
-    let within_range = |n: &i32, n1: &i32| -> bool {
-        let range = (n - n1).abs();
-        if range >= 1 && range <= 3 {
-            return true;
-        } else {
-            return false;
-        }
-    };
 
     lines.iter().for_each(|line| {
         let row: Vec<i32> = line
