@@ -6,7 +6,7 @@
 #include <regex>
 
 // Split using a regex (e.g., multiple spaces)
-std::vector<std::string> split(const std::string &s, const std::string &delimRegex) {
+inline std::vector<std::string> split(const std::string &s, const std::string &delimRegex) {
     std::vector<std::string> elems;
     std::regex regex(delimRegex);
     std::sregex_token_iterator it(s.begin(), s.end(), regex, -1);
