@@ -14,43 +14,40 @@ fn main() {
 
 fn part_1(lines: &Vec<&str>) -> u32 {
     let mut answer = 0;
+    let within_range = |n: &i32, n1: &i32| -> bool {
+        let range = (n - n1).abs();
+        if range >= 1 && range <= 3 {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     lines.iter().for_each(|line| {
-        let row: Vec<u32> = line
+        let row: Vec<i32> = line
             .split(" ")
-            .map(|n| n.parse::<u32>().expect("Not a valid u32!"))
+            .map(|n| n.parse::<i32>().expect("Not a valid i32!"))
             .collect();
 
-        let mut safe: bool = true;
-        let increasing: bool = row.get(0).unwrap() < row.get(1).unwrap();
-
-        for i in 0..row.len() - 1 {
+        let increasing: bool = row.get(0) < row.get(1);
+        let safe: bool = (0..row.len() - 1).fold(true, |safe, i| {
             let n = row.get(i).unwrap();
             let next = row.get(i + 1).unwrap();
             if n < next && increasing {
-                let range = next - n;
-                if range >= 1 && range <= 3 {
-                    continue;
-                } else {
-                    safe = false;
-                    break;
+                if !within_range(n, next) {
+                    return false;
                 }
             } else if n > next && !increasing {
-                let range = n - next;
-                if range >= 1 && range <= 3 {
-                    continue;
-                } else {
-                    safe = false;
-                    break;
+                if !within_range(n, next) {
+                    return false;
                 }
             } else {
-                println!("{:?}", row);
-                safe = false;
-                break;
+                return false;
             }
-        }
+            safe
+        });
 
-        if safe == true {
-            // println!("{:?}", row);
+        if safe {
             answer += 1;
         }
     });
