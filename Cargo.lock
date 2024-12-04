@@ -18,6 +18,9 @@ version = "0.1.0"
 [[package]]
 name = "aoc-rust"
 version = "0.1.0"
+dependencies = [
+ "regex",
+]
 
 [[package]]
 name = "either"
@@ -251,6 +254,7 @@ dependencies = [
  "aoc",
  "itertools",
  "petgraph",
+ "regex",
 ]
 
 [[package]]

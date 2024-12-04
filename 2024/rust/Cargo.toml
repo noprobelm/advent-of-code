@@ -9,4 +9,5 @@ edition = "2021"
 aoc = { path = "../../utils/rust" }
 itertools = "0.12.0"
 petgraph = "0.6.4"
+regex = "1.11.1"
 
