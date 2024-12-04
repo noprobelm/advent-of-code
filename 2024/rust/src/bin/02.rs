@@ -11,29 +11,29 @@ fn main() {
     println!("Part 2: {part_2}");
 }
 
+/// Checks if two numbers are within range of our provided rules.
 fn within_range(n: &i32, n1: &i32) -> bool {
     let range = (n - n1).abs();
     range >= 1 && range <= 3
 }
 
-fn is_safe(row: Vec<i32>) -> (bool, Option<usize>) {
+/// If a row fails the provided rules, return the violating index. Otherwise return None.
+fn fails_by(row: Vec<i32>) -> Option<usize> {
     let increasing: bool = row.get(0) < row.get(1);
-    let (safe, i) = (0..row.len() - 1).fold((true, Some(0)), |safe, i| {
-        let n = row.get(i).unwrap();
+    let mut failed_by: Option<usize> = None;
+    row.iter().enumerate().for_each(|(i, n)| {
+        if i == row.len() - 1 {
+            return;
+        }
         let next = row.get(i + 1).unwrap();
         if n < next && !increasing || !within_range(n, next) {
-            return (false, Some(i));
+            failed_by = Some(i);
         } else if n > next && increasing || !within_range(n, next) {
-            return (false, Some(i));
+            failed_by = Some(i);
         }
-        safe
     });
 
-    if safe {
-        return (safe, None);
-    } else {
-        return (safe, i);
-    }
+    return failed_by;
 }
 
 fn part_1(lines: &Vec<&str>) -> u32 {
@@ -45,8 +45,7 @@ fn part_1(lines: &Vec<&str>) -> u32 {
             .map(|n| n.parse::<i32>().expect("Not a valid i32!"))
             .collect();
 
-        let (safe, _) = is_safe(row);
-        if safe {
+        if fails_by(row).is_none() {
             answer += 1;
         }
     });
@@ -57,32 +56,27 @@ fn part_2(lines: &Vec<&str>) -> u32 {
     let mut answer = 0;
 
     lines.iter().for_each(|line| {
-        let mut num_removed = 0;
-        let mut safe = false;
-        let mut to_remove: Option<usize> = None;
-
         let row: Vec<i32> = line
             .split(" ")
             .map(|n| n.parse::<i32>().expect("Not a valid i32!"))
             .collect();
 
-        while !safe && num_removed < 2 {
-            let mut row_to_test = row.clone();
-            if let Some(to_remove) = to_remove {
-                row_to_test.remove(to_remove);
-                num_removed += 1;
+        let mut failed_by = fails_by(row.clone());
+        if failed_by.is_some() {
+            for i in 0..row.len() {
+                let mut row_to_test = row.clone();
+                row_to_test.remove(i);
+                failed_by = fails_by(row_to_test);
+                if failed_by.is_none() {
+                    answer += 1;
+                    break;
+                }
             }
-            (safe, to_remove) = is_safe(row_to_test.clone());
-            if safe == true {
-                println!("PASSED: {:?} due to {:?}", row, row_to_test);
-            }
-        }
-
-        if safe {
-            answer += 1;
         } else {
-            println!("FAILED: {:?}", row);
+            answer += 1;
+            return;
         }
     });
+
     answer
 }
