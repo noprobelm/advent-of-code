@@ -23,7 +23,7 @@ fn part_1(puzzle_input_str: &str) -> u32 {
             .map(|n| n.parse::<u32>().expect("Invalid u32!"))
             .collect::<Vec<u32>>()
             .iter()
-            .fold(1, |acc, n| acc * n)
+            .product::<u32>()
     })
 }
 
@@ -42,7 +42,7 @@ fn part_2(puzzle_input_str: &str) -> u32 {
                 .map(|n| n.parse::<u32>().expect("Invalid u32!"))
                 .collect::<Vec<u32>>()
                 .iter()
-                .fold(1, |acc, n| acc * n)
+                .product::<u32>()
         });
     }
     answer
