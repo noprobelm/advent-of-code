@@ -98,7 +98,7 @@ fn part_1(lines: &Vec<&str>) -> u32 {
 }
 
 fn part_2(lines: &Vec<&str>) -> u32 {
-    let mut crosses_region: HashSet<URect> = HashSet::new();
+    let mut xmas_region: HashSet<URect> = HashSet::new();
     lines.iter().enumerate().for_each(|(row_pos, line)| {
         line.chars().enumerate().for_each(|(column_pos, c)| {
             if c == 'M' {
@@ -114,7 +114,7 @@ fn part_2(lines: &Vec<&str>) -> u32 {
                                 (-x_vec, y_vec),
                             )
                         {
-                            crosses_region.insert(URect::from_corners(
+                            xmas_region.insert(URect::from_corners(
                                 (column_pos, row_pos),
                                 (opposite_x as usize, opposite_y as usize),
                             ));
@@ -126,7 +126,7 @@ fn part_2(lines: &Vec<&str>) -> u32 {
                                 (x_vec, -y_vec),
                             )
                         {
-                            crosses_region.insert(URect::from_corners(
+                            xmas_region.insert(URect::from_corners(
                                 (column_pos, row_pos),
                                 (opposite_x as usize, opposite_y as usize),
                             ));
@@ -136,5 +136,5 @@ fn part_2(lines: &Vec<&str>) -> u32 {
             }
         });
     });
-    crosses_region.len().try_into().unwrap()
+    xmas_region.len().try_into().unwrap()
 }
