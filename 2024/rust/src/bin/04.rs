@@ -37,10 +37,6 @@ impl URect {
         let upper_left = (first.0.min(second.0), first.1.min(second.1));
         let lower_right = (first.0.max(second.0), first.1.max(second.1));
 
-        if upper_left == lower_right {
-            panic!("'X' and 'Y' must be different for each corner to build a valid URect");
-        }
-
         URect {
             upper_left,
             lower_right,
