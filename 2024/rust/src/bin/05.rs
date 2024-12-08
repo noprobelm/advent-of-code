@@ -21,18 +21,37 @@ fn part_1(map: &HashMap<u32, Vec<u32>>, page_updates: &Vec<Vec<u32>>) -> u32 {
         acc
     })
 }
+
 fn part_2(map: &HashMap<u32, Vec<u32>>, page_updates: &Vec<Vec<u32>>) -> u32 {
     page_updates.clone().iter_mut().fold(0, |acc, page| {
+        let mut start_index = 0;
         let mut unsorted: bool = false;
-        while let Err(failed_index) = ordered(&map, page) {
+        while let Err(failed_index) = ordered(&map, &page[start_index..]) {
             unsorted = true;
-            page.swap(failed_index, failed_index - 1);
+            let actual = start_index + failed_index;
+            page.swap(actual, actual - 1);
+            if start_index > 1 {
+                start_index = actual - 2;
+            }
         }
         if unsorted {
             return acc + page.get(page.len() / 2).unwrap();
         }
         acc
     })
+}
+
+fn ordered(map: &HashMap<u32, Vec<u32>>, page: &[u32]) -> Result<(), usize> {
+    let mut explored: Vec<u32> = Vec::with_capacity(page.len());
+    for (i, page) in page.iter().enumerate() {
+        if let Some(ordered_before) = map.get(page) {
+            if ordered_before.iter().any(|n| explored.contains(n)) {
+                return Err(i);
+            }
+        }
+        explored.push(*page);
+    }
+    Ok(())
 }
 
 fn parse_puzzle_input(puzzle_input: PuzzleInput) -> (HashMap<u32, Vec<u32>>, Vec<Vec<u32>>) {
@@ -69,17 +88,4 @@ fn parse_puzzle_input(puzzle_input: PuzzleInput) -> (HashMap<u32, Vec<u32>>, Vec
     });
 
     (map, page_updates)
-}
-
-fn ordered(map: &HashMap<u32, Vec<u32>>, page: &Vec<u32>) -> Result<(), usize> {
-    let mut explored: Vec<u32> = Vec::with_capacity(page.len());
-    for (i, page) in page.iter().enumerate() {
-        if let Some(ordered_before) = map.get(page) {
-            if ordered_before.iter().any(|n| explored.contains(n)) {
-                return Err(i);
-            }
-        }
-        explored.push(*page);
-    }
-    Ok(())
 }
