@@ -6,11 +6,33 @@ fn main() {
 
     let (map, page_updates) = parse_puzzle_input(p);
 
-    let part_1 = part_1(map.clone(), page_updates.clone());
+    let part_1 = part_1(&map, &page_updates);
     println!("Part 1: {part_1}");
 
-    let part_2 = part_2(map, page_updates);
+    let part_2 = part_2(&map, &page_updates);
     println!("Part 2: {part_2}");
+}
+
+fn part_1(map: &HashMap<u32, Vec<u32>>, page_updates: &Vec<Vec<u32>>) -> u32 {
+    page_updates.iter().fold(0, |acc, page| {
+        if ordered(map, page).is_ok() {
+            return acc + page.get(page.len() / 2).unwrap();
+        }
+        acc
+    })
+}
+fn part_2(map: &HashMap<u32, Vec<u32>>, page_updates: &Vec<Vec<u32>>) -> u32 {
+    page_updates.clone().iter_mut().fold(0, |acc, page| {
+        let mut unsorted: bool = false;
+        while let Err(failed_index) = ordered(&map, page) {
+            unsorted = true;
+            page.swap(failed_index, failed_index - 1);
+        }
+        if unsorted {
+            return acc + page.get(page.len() / 2).unwrap();
+        }
+        acc
+    })
 }
 
 fn parse_puzzle_input(puzzle_input: PuzzleInput) -> (HashMap<u32, Vec<u32>>, Vec<Vec<u32>>) {
@@ -60,27 +82,4 @@ fn ordered(map: &HashMap<u32, Vec<u32>>, page: &Vec<u32>) -> Result<(), usize> {
         explored.push(*page);
     }
     Ok(())
-}
-
-fn part_1(map: HashMap<u32, Vec<u32>>, page_updates: Vec<Vec<u32>>) -> u32 {
-    page_updates.iter().fold(0, |acc, page| {
-        if ordered(&map, page).is_ok() {
-            return acc + page.get(page.len() / 2).unwrap();
-        }
-        acc
-    })
-}
-
-fn part_2(map: HashMap<u32, Vec<u32>>, mut page_updates: Vec<Vec<u32>>) -> u32 {
-    page_updates.iter_mut().fold(0, |acc, page| {
-        let mut unsorted: bool = false;
-        while let Err(failed_index) = ordered(&map, page) {
-            unsorted = true;
-            page.swap(failed_index, failed_index - 1);
-        }
-        if unsorted {
-            return acc + page.get(page.len() / 2).unwrap();
-        }
-        acc
-    })
 }
