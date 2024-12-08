@@ -45,20 +45,9 @@ fn part_1(lines: &Vec<&str>) -> u32 {
         page_updates.push(updates)
     });
 
-    page_updates.iter().for_each(|update| {
-        let mut explored: Vec<u32> = Vec::with_capacity(update.len());
-        let mut ordered: bool = true;
-        update.iter().for_each(|page| {
-            if let Some(ordered_before) = map.get(page) {
-                if ordered_before.iter().any(|n| explored.contains(n)) {
-                    ordered = false;
-                }
-            }
-
-            explored.push(*page);
-        });
-        if is_ordered(&map, update) {
-            answer += update.get(update.len() / 2).unwrap();
+    page_updates.iter().for_each(|page| {
+        if ordered(&map, page).is_ok() {
+            answer += page.get(page.len() / 2).unwrap();
         }
     });
 
@@ -98,39 +87,29 @@ fn part_2(lines: &Vec<&str>) -> u32 {
         page_updates.push(updates)
     });
 
-    page_updates.iter().for_each(|page| {
-        let mut explored: Vec<u32> = Vec::with_capacity(page.len());
-        let mut ordered: bool = true;
-        page.iter().for_each(|page| {
-            if let Some(ordered_before) = map.get(page) {
-                if ordered_before.iter().any(|n| explored.contains(n)) {
-                    ordered = false;
-                }
-            }
-
-            explored.push(*page);
-        });
-
-        if !ordered {
-            let mut corrected: Vec<u32> = Vec::with_capacity(page.len());
-            page.iter().for_each(|page| {})
+    page_updates.iter_mut().for_each(|mut page| {
+        let mut unsorted: bool = false;
+        while let Err(failed_index) = ordered(&map, page) {
+            unsorted = true;
+            page.swap(failed_index, failed_index - 1);
+        }
+        if unsorted {
+            answer += page.get(page.len() / 2).unwrap();
         }
     });
 
     answer
 }
 
-fn is_ordered(map: &HashMap<u32, Vec<u32>>, page: &Vec<u32>) -> bool {
+fn ordered(map: &HashMap<u32, Vec<u32>>, page: &Vec<u32>) -> Result<(), usize> {
     let mut explored: Vec<u32> = Vec::with_capacity(page.len());
-    let mut ordered: bool = true;
-    page.iter().for_each(|page| {
+    for (i, page) in page.iter().enumerate() {
         if let Some(ordered_before) = map.get(page) {
             if ordered_before.iter().any(|n| explored.contains(n)) {
-                ordered = false;
+                return Err(i);
             }
         }
-
         explored.push(*page);
-    });
-    ordered
+    }
+    Ok(())
 }
