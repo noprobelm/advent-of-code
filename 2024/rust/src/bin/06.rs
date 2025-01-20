@@ -8,7 +8,7 @@ fn main() {
     let starting_position = guard.position;
     let part_1 = part_1(&mut guard, &map);
     guard.position = starting_position;
-    println!("{:?}", guard.position);
+    guard.movement_vector = IVec2 { x: 0, y: -1 };
     let part_2 = part_2(&mut guard, &map);
     println!("Part 1: {part_1}");
     println!("Part 2: {part_2}");
@@ -45,12 +45,10 @@ fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
                 if let Some(c) = map.get(&lower_right) {
                     if c == &'#' {
                         n += 1;
-                        continue;
                     }
                 } else if let Some(c) = map.get(&(guard.position + guard.movement_vector)) {
                     if c == &'#' {
                         n += 1;
-                        continue;
                     }
                 }
             }
