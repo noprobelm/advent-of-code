@@ -3,18 +3,36 @@ use std::collections::{HashMap, HashSet};
 
 fn main() {
     let p = PuzzleInput::new("../data/6.txt");
-    let (guard, map) = parse_puzzle_input(&p);
-    let part_1 = part_1(guard, map);
+    let (mut guard, map) = parse_puzzle_input(&p);
+    let part_1 = part_1(&mut guard, &map);
+    let part_2 = part_2(guard, map);
     println!("Part 1: {part_1}");
 }
 
-fn part_1(mut guard: Guard, map: HashMap<Position, char>) -> u32 {
+fn part_1(guard: &mut Guard, map: &HashMap<Position, char>) -> u32 {
     let mut visited: HashSet<Position> = HashSet::new();
     while map.contains_key(&guard.position) {
         visited.insert(guard.position.clone());
         guard.step(&map);
     }
     visited.len() as u32
+}
+
+fn part_2(mut guard: Guard, map: HashMap<Position, char>) -> u32 {
+    let last_obstacle: Option<Position> = None;
+    while map.contains_key(&guard.position) {
+        // The guard encountered an obstacle
+        if &guard.clone().position == guard.step(&map) {
+            if let Some(obstacle) = last_obstacle {
+            } else {
+                let obstacle = Position {
+                    x: guard.position.x + guard.movement_vector.x,
+                    y: guard.position.y + guard.movement_vector.y,
+                };
+            }
+        }
+    }
+    0
 }
 
 fn parse_puzzle_input(p: &PuzzleInput) -> (Guard, HashMap<Position, char>) {
@@ -53,6 +71,7 @@ impl Map {
     }
 }
 
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
 struct Guard {
     position: Position,
     movement_vector: Position,
@@ -68,7 +87,7 @@ impl Default for Guard {
 }
 
 impl Guard {
-    fn step(&mut self, map: &HashMap<Position, char>) {
+    fn step(&mut self, map: &HashMap<Position, char>) -> &Position {
         let next_position = Position {
             x: self.position.x + self.movement_vector.x,
             y: self.position.y + self.movement_vector.y,
@@ -86,6 +105,8 @@ impl Guard {
         } else {
             self.position = next_position;
         }
+
+        &self.position
     }
 
     fn turn(&mut self) {
