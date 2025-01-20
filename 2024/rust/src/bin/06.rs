@@ -43,6 +43,16 @@ struct Position {
     y: isize,
 }
 
+struct Map {
+    map: HashMap<Position, char>,
+}
+
+impl Map {
+    fn contains(&self, position: &Position) -> bool {
+        self.map.contains_key(position)
+    }
+}
+
 struct Guard {
     position: Position,
     movement_vector: Position,
