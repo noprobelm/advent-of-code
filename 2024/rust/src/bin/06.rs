@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 fn main() {
     let p = PuzzleInput::new("../data/6.txt");
-    let (guard, map) = parse_map(&p);
+    let (guard, map) = parse_puzzle_input(&p);
     let part_1 = part_1(guard, map);
     println!("Part 1: {part_1}");
 }
@@ -17,7 +17,7 @@ fn part_1(mut guard: Guard, map: HashMap<Position, char>) -> u32 {
     visited.len() as u32
 }
 
-fn parse_map(p: &PuzzleInput) -> (Guard, HashMap<Position, char>) {
+fn parse_puzzle_input(p: &PuzzleInput) -> (Guard, HashMap<Position, char>) {
     let mut map: HashMap<Position, char> = HashMap::default();
     let mut guard = Guard::default();
     for (y, line) in p.lines().iter().enumerate() {
