@@ -24,51 +24,110 @@ fn part_1(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
 }
 
 fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
-    let mut n = 0;
+    let mut obstacles: HashSet<IVec2> = HashSet::new();
     while map.contains_key(&guard.position) {
         let clockwise_search_vector = guard.movement_vector.rotate(Rotation::Clockwise);
         let clockwise_start_position = guard.position;
         if let Some(upper_right) =
-            obstacle_search(clockwise_start_position, clockwise_search_vector, map)
+            obstacle_search(clockwise_start_position, None, clockwise_search_vector, map)
         {
             let reflected_search_vector = guard.movement_vector.reflect();
             let reflected_start_position =
                 guard.position + guard.movement_vector.rotate(Rotation::CounterClockwise);
             if let Some(lower_left) =
-                obstacle_search(reflected_start_position, reflected_search_vector, map)
+                obstacle_search(reflected_start_position, None, reflected_search_vector, map)
             {
-                let lower_right = IVec2 {
-                    x: upper_right.x,
-                    y: lower_left.y,
-                } + clockwise_search_vector.reflect()
-                    + reflected_search_vector;
-                if let Some(c) = map.get(&lower_right) {
-                    if c == &'#' {
-                        n += 1;
-                    }
-                } else if let Some(c) = map.get(&(guard.position + guard.movement_vector)) {
-                    if c == &'#' {
-                        n += 1;
+                let mut lower_right = match guard.movement_vector {
+                    IVec2 { x: 1, y: 0 } => IVec2 {
+                        x: lower_left.x,
+                        y: upper_right.y,
+                    },
+                    IVec2 { x: -1, y: 0 } => IVec2 {
+                        x: upper_right.x,
+                        y: lower_left.y,
+                    },
+                    IVec2 { x: 0, y: 1 } => IVec2 {
+                        x: upper_right.x,
+                        y: lower_left.y,
+                    },
+                    IVec2 { x: 0, y: -1 } => IVec2 {
+                        x: lower_left.x,
+                        y: upper_right.y,
+                    },
+                    _ => unreachable!(),
+                };
+                lower_right += guard.movement_vector.reflect()
+                    + guard.movement_vector.rotate(Rotation::CounterClockwise);
+
+                let upper_left = guard.position + guard.movement_vector;
+                if map.get(&lower_right).is_some() && map.get(&lower_right).unwrap() == &'#'
+                    || map.get(&upper_left).is_some() && map.get(&upper_left).unwrap() == &'#'
+                {
+                    let guard_position_opposite_corner = lower_right + guard.movement_vector;
+                    let width = (upper_left.x - upper_right.x).abs();
+                    let height = (upper_left.y - lower_right.y).abs();
+
+                    if obstacle_search(
+                        guard.position,
+                        Some(height),
+                        guard.movement_vector.reflect(),
+                        map,
+                    )
+                    .is_none()
+                        && obstacle_search(
+                            guard_position_opposite_corner,
+                            Some(height),
+                            guard.movement_vector,
+                            map,
+                        )
+                        .is_none()
+                        && obstacle_search(
+                            guard_position_opposite_corner,
+                            Some(width),
+                            guard.movement_vector.rotate(Rotation::CounterClockwise),
+                            map,
+                        )
+                        .is_none()
+                    {
+                        if let Some(c) = map.get(&lower_right) {
+                            if c == &'.' {
+                                obstacles.insert(lower_right);
+                                println!("Inserted obstacle at lower right: {:?}", lower_right);
+                            } else {
+                                obstacles.insert(upper_left);
+                                println!("Inserted obstacle at upper left: {:?}", upper_left);
+                            }
+                        }
+                        println!(
+                        "Found box while standing at position '{:?}' on vector '{:?}': \nUpper left: {:?}, Upper right: {:?}, Lower left: {:?}, Lower right: {:?}\n",
+                        guard.position, guard.movement_vector, upper_left, upper_right, lower_left, lower_right
+                         );
                     }
                 }
             }
         }
         guard.step(map);
     }
-    n
+    obstacles.len().try_into().unwrap()
 }
 
 fn obstacle_search(
     start: IVec2,
+    stop: Option<isize>,
     search_vector: IVec2,
     map: &HashMap<IVec2, char>,
 ) -> Option<IVec2> {
     let mut position = start;
+    let mut i = 0;
     while let Some(c) = map.get(&position) {
+        if stop.is_some() && i >= stop.unwrap() {
+            break;
+        }
         if c == &'#' {
             return Some(position);
         }
         position += search_vector;
+        i += 1;
     }
     None
 }
@@ -91,6 +150,24 @@ fn parse_puzzle_input(p: &PuzzleInput) -> (Guard, HashMap<IVec2, char>) {
         }
     }
     (guard, map)
+}
+
+struct Box {
+    upper_left: IVec2,
+    upper_right: IVec2,
+    lower_left: IVec2,
+    lower_right: IVec2,
+}
+
+impl Box {
+    fn new(upper_left: IVec2, upper_right: IVec2, lower_left: IVec2, lower_right: IVec2) -> Self {
+        Box {
+            upper_left,
+            upper_right,
+            lower_left,
+            lower_right,
+        }
+    }
 }
 
 enum Rotation {
