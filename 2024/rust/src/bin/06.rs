@@ -28,8 +28,7 @@ fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
     let starting_position = guard.position;
     let starting_movement_vector = IVec2 { x: 0, y: -1 };
     let mut obstacles: HashSet<IVec2> = HashSet::new();
-    map.iter().enumerate().for_each(|(i, (k, v))| {
-        println!("{i}");
+    map.iter().for_each(|(k, _)| {
         let mut shadow_map = map.clone();
         let mut shadow_guard = Guard {
             position: starting_position,
