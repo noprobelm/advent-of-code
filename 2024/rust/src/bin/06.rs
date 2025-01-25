@@ -23,6 +23,7 @@ fn part_1(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
     visited.len() as u32
 }
 
+// This is a truly awful solution, but I need a break.
 fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
     let starting_position = guard.position;
     let starting_movement_vector = IVec2 { x: 0, y: -1 };
@@ -34,7 +35,6 @@ fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
             position: starting_position,
             movement_vector: starting_movement_vector,
         };
-        let mut visited: HashSet<IVec2> = HashSet::new();
         let obstacle = *k;
         shadow_map.insert(obstacle, '#');
 
@@ -42,7 +42,7 @@ fn part_2(guard: &mut Guard, map: &HashMap<IVec2, char>) -> u32 {
         while shadow_map.contains_key(&shadow_guard.position) {
             shadow_guard.step(&shadow_map);
             k += 1;
-            if k > 17000 {
+            if k > 16641 {
                 obstacles.insert(obstacle);
                 break;
             }
