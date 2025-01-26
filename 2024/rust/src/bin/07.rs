@@ -4,10 +4,6 @@ use std::hash::Hash;
 
 fn main() {
     let p = PuzzleInput::new("../data/7.txt");
-    let nums: Vec<u32> = vec![1, 2, 3, 1];
-    for perm in unique_permutations(nums) {
-        println!("{:?}", perm);
-    }
     let part_1 = part_1(&p);
     println!("Part 1: {}", part_1);
 }
