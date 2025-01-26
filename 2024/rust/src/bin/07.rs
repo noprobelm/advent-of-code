@@ -2,8 +2,6 @@ use aoc::PuzzleInput;
 use std::collections::HashSet;
 use std::hash::Hash;
 
-// 3119088648876: TOO LOW
-//
 fn main() {
     let p = PuzzleInput::new("../data/7.txt");
     let nums: Vec<u32> = vec![1, 2, 3, 1];
@@ -26,7 +24,8 @@ fn part_1(puzzle_input: &PuzzleInput) -> u64 {
             operations.push(Operation::Product);
         }
         let mut new_operations = operations.clone();
-        for i in 0..operations.len() {
+        for i in 0..=operations.len() {
+            println!("{:?}", new_operations);
             let perms = unique_permutations(new_operations.clone());
             for perm in perms {
                 let answer =
@@ -37,7 +36,9 @@ fn part_1(puzzle_input: &PuzzleInput) -> u64 {
                     continue 'outer;
                 }
             }
-            new_operations[i] = Operation::Sum;
+            if i < operations.len() {
+                new_operations[i] = Operation::Sum;
+            }
         }
     }
     part_1_answer
