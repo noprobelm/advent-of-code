@@ -1,5 +1,5 @@
 use aoc::PuzzleInput;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::hash::Hash;
 
 fn main() {
