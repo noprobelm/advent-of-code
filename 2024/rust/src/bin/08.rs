@@ -19,19 +19,12 @@ fn part_1(puzzle_input: &PuzzleInput) -> usize {
                 && antenna.variant == other.variant
                 && antenna.position != other.position
             {
-                let diff = antenna.position - other.position;
-                println!("{:?}", diff);
-                let first_antinode = antenna.position
-                    - Position {
-                        x: diff.x * 2,
-                        y: diff.y * 2,
-                    };
-                println!("First antinode: {:?}", first_antinode);
+                let diff = other.position - antenna.position;
+                let first_antinode = other.position + diff;
                 if matrix.contains(first_antinode) {
                     antinodes.insert(first_antinode);
                 }
-                let second_antinode = antenna.position + diff;
-                println!("Second antinode: {:?}", second_antinode);
+                let second_antinode = antenna.position - diff;
                 if matrix.contains(second_antinode) {
                     antinodes.insert(second_antinode);
                 }
@@ -50,17 +43,13 @@ fn part_2(puzzle_input: &PuzzleInput) -> usize {
                 && antenna.variant == other.variant
                 && antenna.position != other.position
             {
-                let diff = antenna.position - other.position;
-                let mut first_antinode = antenna.position
-                    - Position {
-                        x: diff.x * 2,
-                        y: diff.y * 2,
-                    };
+                let diff = other.position - antenna.position;
+                let mut first_antinode = antenna.position + diff;
                 while matrix.contains(first_antinode) {
                     antinodes.insert(first_antinode);
                     first_antinode -= diff;
                 }
-                let mut second_antinode = antenna.position - diff;
+                let mut second_antinode = other.position - diff;
                 while matrix.contains(second_antinode) {
                     antinodes.insert(second_antinode);
                     second_antinode += diff;
@@ -68,16 +57,6 @@ fn part_2(puzzle_input: &PuzzleInput) -> usize {
             }
         });
     });
-    // let mut new_matrix = matrix.clone();
-    // matrix.iter().for_each(|antenna| {
-    //     if antenna.variant == '.' && antinodes.contains(&antenna.position) {
-    //         new_matrix.insert(Antenna::new(antenna.position, '#'));
-    //     } else {
-    //         new_matrix.insert(*antenna);
-    //     }
-    // });
-    // let s = new_matrix.strf();
-    // println!("{s}");
     antinodes.len()
 }
 
