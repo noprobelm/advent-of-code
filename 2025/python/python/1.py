@@ -30,11 +30,14 @@ def part_2():
 
         answer += abs(position // 100)
         if position <= 0:
+            # If we rotate left and land on -200, we've actually passed '0' 3 times (i.e., abs(-200 // 100 = 2)), so add 1.
             if position % 100 == 0:
                 answer += 1
+            # If this is True, we started from 0 and thusly already counted it in the previous iteration (0 % 100 = 0).
             if rotation == abs(position):
                 answer -= 1
 
+        # Normalize the position to 0-99
         position %= 100
 
     return answer
