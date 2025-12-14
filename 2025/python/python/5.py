@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import dataclass
 from functools import reduce
 
 fresh = [(3, 5), (10, 14), (16, 20), (12, 18)]
