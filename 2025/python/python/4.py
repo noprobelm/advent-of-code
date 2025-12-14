@@ -22,18 +22,23 @@ def part_1():
     answer = 0
     grid = []
     for y, row in enumerate(puzzle_input):
-        for x, val in enumerate(row):
-            if val == "@":
-                grid.append((Position(x, y)))
-    for position in grid:
-        adjacent_rolls = len(
-            [
-                neighbor
-                for neighbor in MooreNeighborhood(position).get_neighbors()
-                if neighbor in grid
-            ]
-        )
-        if adjacent_rolls < 4:
+        grid.append([])
+        for val in row:
+            grid[y].append(val)
+    grid = Grid(grid)
+
+    for position, val in grid.enumerate():
+        if (
+            val == "@"
+            and len(
+                [
+                    neighbor
+                    for neighbor in MooreNeighborhood(position).get_neighbors()
+                    if grid.get(neighbor) == "@"
+                ]
+            )
+            < 4
+        ):
             answer += 1
 
     return answer
@@ -41,30 +46,70 @@ def part_1():
 
 def part_2():
     grid = []
+    num_rolls = 0
     for y, row in enumerate(puzzle_input):
-        for x, val in enumerate(row):
+        grid.append([])
+        for val in row:
+            grid[y].append(val)
             if val == "@":
-                grid.append((Position(x, y)))
-    num_rolls = len(grid)
+                num_rolls += 1
+    grid = Grid(grid)
     while True:
-        removed = []
-        for position in grid:
-            adjacent_rolls = len(
-                [
-                    neighbor
-                    for neighbor in MooreNeighborhood(position).get_neighbors()
-                    if neighbor in grid
-                ]
-            )
-            if adjacent_rolls < 4:
-                removed.append(position)
-        if len(removed) == 0:
-            break
-        grid = [position for position in grid if position not in removed]
-        print(len(removed))
-        removed = []
+        num_removed = 0
+        for position, val in grid.enumerate():
+            if (
+                val == "@"
+                and len(
+                    [
+                        neighbor
+                        for neighbor in MooreNeighborhood(position).get_neighbors()
+                        if grid.get(neighbor) == "@"
+                    ]
+                )
+                < 4
+            ):
+                grid.set(position, ".")
+                num_removed += 1
 
-    return num_rolls - len(grid)
+        if num_removed == 0:
+            break
+
+    return num_rolls - len([val for val in grid if val == "@"])
+
+
+@dataclass
+class Grid:
+    grid: list[list[str]]
+
+    def __post_init__(self):
+        self.shape = (len(self.grid), len(self.grid[0]))
+
+    def __contains__(self, position: Position):
+        return (
+            position.y < self.shape[0]
+            and position.y >= 0
+            and position.x < self.shape[1]
+            and position.x >= 0
+        )
+
+    def get(self, position: Position):
+        if position in self:
+            return self.grid[position.y][position.x]
+        else:
+            return None
+
+    def set(self, position: Position, val: str):
+        self.grid[position.y][position.x] = val
+
+    def enumerate(self):
+        for y, row in enumerate(self.grid):
+            for x, value in enumerate(row):
+                yield Position(x, y), value
+
+    def __iter__(self):
+        for row in self.grid:
+            for value in row:
+                yield value
 
 
 @dataclass(frozen=True, slots=True)
