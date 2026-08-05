@@ -1,16 +1,8 @@
 import re
 from functools import reduce
 
-puzzle_input = [
-    line.strip("\n")
-    for line in """123 328  51 64 
- 45 64  387 23 
-  6 98  215 314
-*   +   *   +  """.split("\n")
-]
-
-# with open("../../data/6.txt", "r") as f:
-#     puzzle_input = [line.strip() for line in f.readlines()]
+with open("../../data/6.txt", "r") as f:
+    puzzle_input = [line.strip("\n") for line in f.readlines()]
 
 
 def part_1():
@@ -45,10 +37,9 @@ def part_2():
             nums = []
             operation = puzzle_input[-1][i + 1]
 
-        # There is no delimiter for the final column. Make sure we catch the end case
+        # We are on the final column. Add the operation to our sum.
         if i == len(transposed) - 1:
             answer += operate(operation, nums)
-            nums = []
 
     return answer
 
