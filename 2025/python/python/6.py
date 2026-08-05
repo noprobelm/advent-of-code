@@ -31,13 +31,13 @@ def part_2():
             nums.append(
                 int("".join(list(filter(lambda x: x.isdigit(), transposed[i]))))
             )
-        # We've encountered a column delimiter. Add the operation to the answer and reset.
+        # We've encountered an operation set delimiter. Add the operation to the answer and reset.
         else:
             answer += operate(operation, nums)
             nums = []
             operation = puzzle_input[-1][i + 1]
 
-        # We are on the final column. Add the operation to our sum.
+        # We have built the nums for the final operation. Add the sum and finish.
         if i == len(transposed) - 1:
             answer += operate(operation, nums)
 
