@@ -24,6 +24,7 @@ def part_2():
     operations = re.findall(r"\S+", puzzle_input[-1])
     rows = [list(line) for line in puzzle_input[:-1]]
     transposed = [list(row) for row in zip(*rows)]
+
     nums = []
     operation = operations[0]
     for i in range(len(transposed)):
